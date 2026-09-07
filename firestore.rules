@@ -1,0 +1,51 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // User Accounts & Balances
+    // Only the individual user can read their document. Mutations must occur via Cloud Functions.
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if false; // Strict server-authoritative balance mutation
+    }
+
+    // P2P QR Payment Tokens
+    // Authenticated users can read tokens to inspect status or listen for live completion.
+    // Direct client creation or modification is denied to ensure HMAC signing and single-use invariants.
+    match /p2p_qr_tokens/{tokenId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Managed exclusively by Cloud Functions
+    }
+
+    // Payment Transactions
+    // Users can read transaction history if they participated as sender or receiver.
+    match /transactions/{transactionId} {
+      allow read: if isAuthenticated() && (
+        resource.data.senderId == request.auth.uid ||
+        resource.data.receiverId == request.auth.uid
+      );
+      allow write: if false; // Append-only by Cloud Functions
+    }
+
+    // System Metrics & Admin Statistics
+    match /system_metrics/{metricId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // Audit logs
+    match /audit_logs/{logId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+  }
+}

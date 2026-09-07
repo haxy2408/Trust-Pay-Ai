@@ -1,29 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    package="com.example.trustpay">
 
-    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <!-- Permissions required for QR scanning and Firebase Cloud synchronization -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
     <application
         android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="TrustPay"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MyApplication">
+        android:theme="@style/Theme.TrustPay">
+
         <activity
             android:name=".MainActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.MyApplication">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.ReceiveMoneyQrActivity"
+            android:label="Receive Money - Generate QR"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.ScanAndPayActivity"
+            android:label="Scan &amp; Pay"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.AdminStatsActivity"
+            android:label="TrustPay Admin &amp; Security"
+            android:exported="false" />
     </application>
 
 </manifest>
