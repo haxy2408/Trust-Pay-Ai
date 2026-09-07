@@ -1,0 +1,6 @@
+{
+  "name": "TrustPay AI",
+  "description": "Hackathon demo payment-security app authenticating transactions with SHA-256 binding, biometric verification, and velocity anomaly detection.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
