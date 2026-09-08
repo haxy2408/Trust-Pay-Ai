@@ -163,8 +163,8 @@ export const TrustPayScreen: React.FC<TrustPayScreenProps> = ({
     []
   );
 
-  // Request server-side AI risk insights via Express API route if available
-  const fetchAiRiskInsights = async (
+  // Request server-side security risk insights via Express API route if available
+  const fetchSecurityRiskInsights = async (
     txId: string,
     recipient: string,
     amount: number,
@@ -173,7 +173,7 @@ export const TrustPayScreen: React.FC<TrustPayScreenProps> = ({
     isAnomaly: boolean
   ) => {
     try {
-      const res = await fetch('/api/ai-risk-insights', {
+      const res = await fetch('/api/risk-insights', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -314,6 +314,8 @@ export const TrustPayScreen: React.FC<TrustPayScreenProps> = ({
     const requiresBiometric = score >= 70 || amount > 25000;
     const requiresOtp = isVelocityAnomaly;
 
+    const localSecurityInsights = `TrustPay Security Engine [${score >= 70 || isVelocityAnomaly ? 'CRITICAL' : score >= 40 ? 'MODERATE' : 'LOW'} RISK · ${score}/100]: ${detectedSignals.join('; ') || 'Standard behavioral baseline'}. ${isVelocityAnomaly ? 'Rolling 5-min velocity limit reached. Multi-factor authentication (Biometric + Intent Challenge + OTP) enforced.' : requiresBiometric ? 'Biometric fingerprint authorization mandated prior to funds settlement.' : 'Sealed with SHA-256 integrity binding. Instant approval enabled.'}`;
+
     const analysis: RiskAnalysisResult = {
       score,
       signals: detectedSignals,
@@ -321,6 +323,7 @@ export const TrustPayScreen: React.FC<TrustPayScreenProps> = ({
       requiresOtp,
       isVelocityAnomaly,
       boundHash: bindingHash,
+      aiInsights: localSecurityInsights,
     };
 
     setCurrentAnalysis(analysis);
@@ -328,8 +331,8 @@ export const TrustPayScreen: React.FC<TrustPayScreenProps> = ({
     setSignals(detectedSignals);
     setPendingSnapshot(snapshot);
 
-    // Call server for background AI insights
-    fetchAiRiskInsights(txId, recipient, amount, score, detectedSignals, isVelocityAnomaly);
+    // Call server for background simulated security insights
+    fetchSecurityRiskInsights(txId, recipient, amount, score, detectedSignals, isVelocityAnomaly);
 
     // Flow routing
     if (isVelocityAnomaly) {

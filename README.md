@@ -91,7 +91,7 @@ Follow this step-by-step path to test the entire security pipeline:
 - **Styling**: Tailwind CSS with custom high-contrast security theme & WCAG AAA tokens
 - **Icons**: Lucide React
 - **Animations**: Motion (`motion/react`)
-- **Backend API**: Express server (`server.ts`) running on port 3000 with optional server-side Gemini API risk insights
+- **Backend API**: Express server (`server.ts`) running on port 3000 with deterministic rule-based fraud risk insights engine
 - **Cryptography**: Synchronous and Web Crypto SHA-256 payload binding and salted password hashing
 - **Persistence**: `localStorage` and simulated Firestore (User accounts, demo balances, transactions, audit logs)
 - **P2P QR Engine**: 30-second rotating HMAC-SHA256 tokens, one-time nonces, double-spend prevention

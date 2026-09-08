@@ -2,10 +2,9 @@ import express from "express";
 import path from "path";
 import crypto from "crypto";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI } from "@google/genai";
 
 // Server-side master HMAC secret for signing QR tokens (never exposed to client)
-const QR_SIGNING_SECRET = process.env.QR_SIGNING_SECRET || "trustpay_cloud_secure_hmac_key_2026";
+const QR_SIGNING_SECRET = "trustpay_cloud_secure_hmac_key_2026";
 
 interface ServerQrToken {
   tokenId: string;
@@ -52,17 +51,6 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
-
-  // Lazy Gemini client helper
-  let geminiClient: GoogleGenAI | null = null;
-  function getGemini(): GoogleGenAI | null {
-    const key = process.env.GEMINI_API_KEY;
-    if (!key) return null;
-    if (!geminiClient) {
-      geminiClient = new GoogleGenAI({ apiKey: key });
-    }
-    return geminiClient;
-  }
 
   // Health endpoint
   app.get("/api/health", (req, res) => {
@@ -578,43 +566,42 @@ async function startServer() {
     });
   });
 
-  // AI Security Risk Insights Endpoint
-  app.post("/api/ai-risk-insights", async (req, res) => {
+  // Simulated Fraud Risk Intelligence Endpoint (Rule-based & Deterministic)
+  app.post(["/api/ai-risk-insights", "/api/risk-insights"], (req, res) => {
     try {
       const { transactionId, recipient, amount, score, signals, isAnomaly } = req.body;
-      const ai = getGemini();
 
-      if (!ai) {
-        return res.json({
-          insights: `Rule-based evaluation score ${score}/100. Signals: ${signals && signals.length ? signals.join(", ") : "Standard low-risk pattern"}. Cryptographic SHA-256 payload integrity sealed.`,
-          source: "heuristic"
-        });
+      let riskTier = "LOW";
+      let actionDirective = "Payload sealed with SHA-256 integrity digest. Instant single-click release authorized.";
+
+      if (isAnomaly || score >= 70) {
+        riskTier = "HIGH";
+        actionDirective = isAnomaly
+          ? "Rolling 5-minute velocity anomaly limit breached (≥3 txns & ≥₹15,000). Enforcing 3-factor verification: Designated finger biometric + cognitive intent challenge + OTP."
+          : "Elevated risk index detected. Biometric fingerprint authorization mandated prior to funds settlement.";
+      } else if (score >= 40) {
+        riskTier = "MODERATE";
+        actionDirective = "Beneficiary or device anomaly flagged. Please review recipient details before confirming transfer.";
       }
 
-      const prompt = `As TrustPay Fraud Protection, assess this transaction:
-Transaction ID: ${transactionId}
-Recipient UPI: ${recipient}
-Amount: INR ${amount}
-Heuristic Score: ${score}/100
-Signals: ${(signals || []).join(", ") || "None"}
-Velocity Anomaly Triggered: ${isAnomaly ? "YES (Rolling 5-min threshold breached)" : "NO"}
+      const signalSummary = signals && signals.length > 0
+        ? signals.join("; ")
+        : "Standard behavioral transaction baseline";
 
-Provide a concise 2-sentence fraud risk review explaining why this risk level was assigned and the recommended verification step.`;
-
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: prompt,
-      });
+      const insights = `TrustPay Security Engine [${riskTier} RISK · ${score}/100]: ${signalSummary}. ${actionDirective}`;
 
       res.json({
-        insights: response.text?.trim() || "Transaction cleared against standard heuristic verification.",
-        source: "gemini"
+        insights,
+        source: "rule-engine",
+        riskTier,
+        transactionId,
+        recipient,
+        amount,
       });
-    } catch (err) {
-      console.error("Gemini evaluation error:", err);
+    } catch {
       res.json({
         insights: "Heuristic anomaly detection active. Payload bound with SHA-256 integrity digest.",
-        source: "fallback"
+        source: "fallback",
       });
     }
   });

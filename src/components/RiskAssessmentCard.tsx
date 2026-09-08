@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, AlertCircle, AlertTriangle, Lock, Sparkles } from 'lucide-react';
+import { CheckCircle2, AlertCircle, AlertTriangle, Lock, ShieldCheck } from 'lucide-react';
 import { TrustPayUiState } from '../types';
 
 interface RiskAssessmentCardProps {
@@ -138,11 +138,11 @@ export const RiskAssessmentCard: React.FC<RiskAssessmentCardProps> = ({ uiState 
           </div>
         )}
 
-        {/* Optional AI Risk Insight / SOC Commentary */}
+        {/* Security Risk Insight / Intelligence Commentary */}
         {uiState.currentAnalysis?.aiInsights && (
           <div className="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/20 text-xs">
             <div className="flex items-center gap-1.5 text-cyan-300 font-bold mb-1">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
               <span>TrustPay Security Intelligence</span>
             </div>
             <div className="text-slate-300 leading-relaxed">
