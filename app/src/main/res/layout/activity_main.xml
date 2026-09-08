@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/primary_navy">
+
+    <!-- Top App Bar / Security Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical"
+        android:background="@color/primary_dark">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="TrustPay Secure Mobile"
+            android:textColor="@color/trust_cyan"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnOpenScan"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="Scan QR"
+            android:textSize="12sp"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/brand_blue" />
+
+        <Button
+            android:id="@+id/btnOpenReceive"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:text="My QR"
+            android:textSize="12sp"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/trust_cyan" />
+    </LinearLayout>
+
+    <!-- Embedded High Performance Hybrid Webview for full simulated features -->
+    <WebView
+        android:id="@+id/mainWebView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

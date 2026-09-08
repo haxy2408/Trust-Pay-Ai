@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Sun, Moon, User, LogOut, BookOpen } from 'lucide-react';
+import { Shield, Sun, Moon, User, LogOut, BookOpen, Smartphone } from 'lucide-react';
 import { UserAccount } from '../types';
 
 interface HeaderBannerProps {
@@ -7,6 +7,7 @@ interface HeaderBannerProps {
   currentUser: UserAccount | null;
   onToggleTheme: () => void;
   onOpenGuide: () => void;
+  onOpenInstallAndroid?: () => void;
   onLogout: () => void;
 }
 
@@ -15,6 +16,7 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({
   currentUser,
   onToggleTheme,
   onOpenGuide,
+  onOpenInstallAndroid,
   onLogout,
 }) => {
   return (
@@ -26,20 +28,33 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({
       }`}
     >
       <div className="flex flex-col gap-4">
-        {/* Top bar with Badge and Scenario button */}
+        {/* Top bar with Badge, Scenario button, and Android Install */}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/40 text-xs font-bold tracking-wider text-cyan-300">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             HACKATHON DEMO • SIMULATED
           </div>
 
-          <button
-            onClick={onOpenGuide}
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 transition-colors"
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-            Scenario Walkthrough
-          </button>
+          <div className="flex items-center gap-2">
+            {onOpenInstallAndroid && (
+              <button
+                onClick={onOpenInstallAndroid}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 transition-colors"
+                title="Install TrustPay on Android as APK or WebAPK"
+              >
+                <Smartphone className="w-3.5 h-3.5" />
+                Install Android APK
+              </button>
+            )}
+
+            <button
+              onClick={onOpenGuide}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 transition-colors"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              Scenario Walkthrough
+            </button>
+          </div>
         </div>
 
         {/* Tagline */}

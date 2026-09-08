@@ -34,6 +34,7 @@ import { ScanAndPayModal } from './ScanAndPayModal';
 import { QrHistoryModal } from './QrHistoryModal';
 import { AdminPanelModal } from './AdminPanelModal';
 import { DualAuthPanelModal } from './DualAuthPanelModal';
+import { AndroidInstallModal } from './AndroidInstallModal';
 import { LocationDistanceClassifierView } from './distance/LocationDistanceClassifierView';
 import {
   QrCode,
@@ -107,7 +108,22 @@ export const TrustPayScreen: React.FC<TrustPayScreenProps> = ({
   const [showQrHistoryModal, setShowQrHistoryModal] = useState<boolean>(false);
   const [showAdminModal, setShowAdminModal] = useState<boolean>(false);
   const [showDualAuthModal, setShowDualAuthModal] = useState<boolean>(false);
+  const [showAndroidInstallModal, setShowAndroidInstallModal] = useState<boolean>(false);
+  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
   const [activeUserLocal, setActiveUserLocal] = useState<UserAccount | null>(currentUser);
+
+  // Intercept PWA install prompt for Android install flow
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredInstallPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
 
   // Dynamic count of pending dual authorizations
   const pendingDualAuthCount = useMemo(() => {
@@ -702,6 +718,7 @@ export const TrustPayScreen: React.FC<TrustPayScreenProps> = ({
           currentUser={currentUser}
           onToggleTheme={onToggleTheme}
           onOpenGuide={() => setShowGuideModal(true)}
+          onOpenInstallAndroid={() => setShowAndroidInstallModal(true)}
           onLogout={onLogout}
         />
 
@@ -1112,6 +1129,13 @@ export const TrustPayScreen: React.FC<TrustPayScreenProps> = ({
           }}
         />
       )}
+
+      {/* 10. Android Install & APK Package Modal */}
+      <AndroidInstallModal
+        isOpen={showAndroidInstallModal}
+        onClose={() => setShowAndroidInstallModal(false)}
+        deferredPrompt={deferredInstallPrompt}
+      />
     </div>
   );
 };

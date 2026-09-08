@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TrustPay</string>
+    <string name="scan_pay_title">Scan &amp; Pay</string>
+    <string name="receive_money_title">Receive Money - QR</string>
+    <string name="admin_stats_title">TrustPay Security SOC</string>
+    <string name="default_disclaimer">TrustPay Security Architecture: 30s rotating HMAC-SHA256 tokens. Anti-phishing payload bound.</string>
+</resources>
