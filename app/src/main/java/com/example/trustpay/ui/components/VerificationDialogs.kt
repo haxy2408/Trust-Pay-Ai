@@ -37,7 +37,8 @@ fun VerificationDialog(
     Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Navy800),
+            colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
             border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
             modifier = Modifier
                 .fillMaxWidth()
@@ -45,7 +46,7 @@ fun VerificationDialog(
                 .testTag("verification_dialog")
         ) {
             Column(
-                modifier = Modifier.padding(20.dp),
+                modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 when (state.currentStep) {
@@ -87,16 +88,16 @@ private fun BiometricStepContent(
 ) {
     Box(
         modifier = Modifier
-            .size(64.dp)
+            .size(68.dp)
             .clip(CircleShape)
-            .background(TrustCyan.copy(alpha = 0.2f))
-            .border(2.dp, TrustCyan, CircleShape),
+            .background(TrustBlueContainer)
+            .border(2.dp, TrustBlue.copy(alpha = 0.3f), CircleShape),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = Icons.Default.Fingerprint,
             contentDescription = "Fingerprint",
-            tint = TrustCyan,
+            tint = TrustBlue,
             modifier = Modifier.size(36.dp)
         )
     }
@@ -107,7 +108,7 @@ private fun BiometricStepContent(
         text = "Biometric Intent Verification",
         fontSize = 18.sp,
         fontWeight = FontWeight.Bold,
-        color = WhitePure
+        color = CharcoalText
     )
 
     Spacer(modifier = Modifier.height(6.dp))
@@ -115,20 +116,21 @@ private fun BiometricStepContent(
     Text(
         text = "Authenticating transfer of ${CryptoUtils.formatIndianCurrency(state.amount)} to ${state.recipient}",
         fontSize = 12.sp,
-        color = SlateLight,
-        lineHeight = 16.sp
+        color = SlateText,
+        lineHeight = 16.sp,
+        textAlign = androidx.compose.ui.text.style.TextAlign.Center
     )
 
-    Spacer(modifier = Modifier.height(14.dp))
+    Spacer(modifier = Modifier.height(16.dp))
 
     // Designated Finger Challenge Card
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(Navy700)
-            .border(1.dp, CardBorder, RoundedCornerShape(10.dp))
-            .padding(12.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(SecurityAmberBg)
+            .border(1.dp, SecurityAmber.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+            .padding(14.dp)
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
@@ -146,9 +148,9 @@ private fun BiometricStepContent(
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = state.designatedFinger,
-                fontSize = 15.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = WhitePure
+                color = CharcoalText
             )
         }
     }
@@ -160,15 +162,15 @@ private fun BiometricStepContent(
         onClick = onAuthenticate,
         modifier = Modifier
             .fillMaxWidth()
-            .height(46.dp)
+            .height(48.dp)
             .testTag("confirm_biometric_button"),
         shape = RoundedCornerShape(10.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = TrustCyan)
+        colors = ButtonDefaults.buttonColors(containerColor = TrustBlue)
     ) {
         Icon(
             imageVector = Icons.Default.Fingerprint,
             contentDescription = null,
-            tint = Navy900,
+            tint = WhitePure,
             modifier = Modifier.size(18.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
@@ -176,7 +178,7 @@ private fun BiometricStepContent(
             text = "Verify Fingerprint & Sign",
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            color = Navy900
+            color = WhitePure
         )
     }
 
@@ -187,7 +189,7 @@ private fun BiometricStepContent(
         onClick = onSimulateTamper,
         modifier = Modifier
             .fillMaxWidth()
-            .height(42.dp)
+            .height(44.dp)
             .testTag("simulate_tamper_button"),
         shape = RoundedCornerShape(10.dp),
         colors = ButtonDefaults.outlinedButtonColors(contentColor = SecurityRed),
@@ -211,7 +213,7 @@ private fun BiometricStepContent(
     Spacer(modifier = Modifier.height(6.dp))
 
     TextButton(onClick = onCancel) {
-        Text("Cancel Transaction", color = SlateText, fontSize = 12.sp)
+        Text("Cancel Transaction", color = SlateText, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 
@@ -225,10 +227,10 @@ private fun ChallengeStepContent(
 
     Box(
         modifier = Modifier
-            .size(56.dp)
+            .size(58.dp)
             .clip(CircleShape)
             .background(SecurityAmberBg)
-            .border(2.dp, SecurityAmber, CircleShape),
+            .border(2.dp, SecurityAmber.copy(alpha = 0.4f), CircleShape),
         contentAlignment = Alignment.Center
     ) {
         Icon(
@@ -245,7 +247,7 @@ private fun ChallengeStepContent(
         text = "Cognitive Intent Challenge",
         fontSize = 17.sp,
         fontWeight = FontWeight.Bold,
-        color = WhitePure
+        color = CharcoalText
     )
 
     Spacer(modifier = Modifier.height(6.dp))
@@ -253,7 +255,8 @@ private fun ChallengeStepContent(
     Text(
         text = state.challengeData?.question ?: "Confirm the beneficiary domain:",
         fontSize = 13.sp,
-        color = SlateLight
+        color = SlateText,
+        textAlign = androidx.compose.ui.text.style.TextAlign.Center
     )
 
     Spacer(modifier = Modifier.height(14.dp))
@@ -269,8 +272,10 @@ private fun ChallengeStepContent(
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = SecurityAmber,
             unfocusedBorderColor = CardBorder,
-            focusedTextColor = WhitePure,
-            unfocusedTextColor = SlateLight
+            focusedTextColor = CharcoalText,
+            unfocusedTextColor = CharcoalText,
+            focusedPlaceholderColor = SlateMuted,
+            unfocusedPlaceholderColor = SlateMuted
         ),
         shape = RoundedCornerShape(10.dp)
     )
@@ -281,18 +286,18 @@ private fun ChallengeStepContent(
         onClick = { onSubmit(answer) },
         modifier = Modifier
             .fillMaxWidth()
-            .height(44.dp)
+            .height(46.dp)
             .testTag("submit_challenge_button"),
         shape = RoundedCornerShape(10.dp),
         colors = ButtonDefaults.buttonColors(containerColor = SecurityAmber)
     ) {
-        Text("Confirm Intent", color = Navy900, fontWeight = FontWeight.Bold)
+        Text("Confirm Intent", color = CharcoalText, fontWeight = FontWeight.Bold)
     }
 
     Spacer(modifier = Modifier.height(6.dp))
 
     TextButton(onClick = onCancel) {
-        Text("Cancel", color = SlateText, fontSize = 12.sp)
+        Text("Cancel", color = SlateText, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 
@@ -306,16 +311,16 @@ private fun OtpStepContent(
 
     Box(
         modifier = Modifier
-            .size(56.dp)
+            .size(58.dp)
             .clip(CircleShape)
-            .background(ElectricBlue.copy(alpha = 0.2f))
-            .border(2.dp, ElectricBlue, CircleShape),
+            .background(TrustBlueContainer)
+            .border(2.dp, TrustBlue.copy(alpha = 0.3f), CircleShape),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = Icons.Default.Sms,
             contentDescription = "OTP",
-            tint = ElectricBlue,
+            tint = TrustBlue,
             modifier = Modifier.size(30.dp)
         )
     }
@@ -326,7 +331,7 @@ private fun OtpStepContent(
         text = "6-Digit Secure OTP Verification",
         fontSize = 17.sp,
         fontWeight = FontWeight.Bold,
-        color = WhitePure
+        color = CharcoalText
     )
 
     Spacer(modifier = Modifier.height(6.dp))
@@ -334,7 +339,8 @@ private fun OtpStepContent(
     Text(
         text = "High-risk velocity breach triggered. Demo OTP prefilled:",
         fontSize = 12.sp,
-        color = SlateLight
+        color = SlateText,
+        textAlign = androidx.compose.ui.text.style.TextAlign.Center
     )
 
     Spacer(modifier = Modifier.height(14.dp))
@@ -349,10 +355,12 @@ private fun OtpStepContent(
             .fillMaxWidth()
             .testTag("otp_input"),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = TrustCyan,
+            focusedBorderColor = TrustBlue,
             unfocusedBorderColor = CardBorder,
-            focusedTextColor = WhitePure,
-            unfocusedTextColor = SlateLight
+            focusedTextColor = CharcoalText,
+            unfocusedTextColor = CharcoalText,
+            focusedLabelColor = TrustBlue,
+            unfocusedLabelColor = SlateMuted
         ),
         shape = RoundedCornerShape(10.dp)
     )
@@ -363,17 +371,17 @@ private fun OtpStepContent(
         onClick = { onSubmit(otpInput) },
         modifier = Modifier
             .fillMaxWidth()
-            .height(44.dp)
+            .height(46.dp)
             .testTag("submit_otp_button"),
         shape = RoundedCornerShape(10.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = TrustCyan)
+        colors = ButtonDefaults.buttonColors(containerColor = TrustBlue)
     ) {
-        Text("Verify & Release Funds", color = Navy900, fontWeight = FontWeight.Bold)
+        Text("Verify & Release Funds", color = WhitePure, fontWeight = FontWeight.Bold)
     }
 
     Spacer(modifier = Modifier.height(6.dp))
 
     TextButton(onClick = onCancel) {
-        Text("Cancel", color = SlateText, fontSize = 12.sp)
+        Text("Cancel", color = SlateText, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
     }
 }

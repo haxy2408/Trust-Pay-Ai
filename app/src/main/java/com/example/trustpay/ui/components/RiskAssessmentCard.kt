@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -39,11 +40,12 @@ fun RiskAssessmentCard(
             .fillMaxWidth()
             .testTag("risk_assessment_card"),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Navy800),
+        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(18.dp)
         ) {
             // Header with score & badge
             Row(
@@ -52,25 +54,33 @@ fun RiskAssessmentCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Shield,
-                        contentDescription = "Risk Shield",
-                        tint = tierColor,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(tierBg),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Shield,
+                            contentDescription = "Risk Shield",
+                            tint = tierColor,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
                     Text(
                         text = "Real-Time Risk Engine",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = WhitePure
+                        color = CharcoalText
                     )
                 }
 
                 Surface(
                     shape = RoundedCornerShape(12.dp),
                     color = tierBg,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, tierColor),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, tierColor.copy(alpha = 0.5f)),
                     modifier = Modifier.testTag("risk_tier_badge")
                 ) {
                     Text(
@@ -83,7 +93,7 @@ fun RiskAssessmentCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // Score Progress Bar
             Row(
@@ -116,7 +126,7 @@ fun RiskAssessmentCard(
                             .height(8.dp)
                             .clip(RoundedCornerShape(4.dp)),
                         color = tierColor,
-                        trackColor = Navy700
+                        trackColor = Color(0xFFE2E8F0)
                     )
                 }
             }
@@ -127,10 +137,10 @@ fun RiskAssessmentCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Navy700)
-                    .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
-                    .padding(10.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(SurfaceVariant)
+                    .border(1.dp, CardBorder, RoundedCornerShape(10.dp))
+                    .padding(12.dp)
             ) {
                 Column {
                     Row(
@@ -142,22 +152,22 @@ fun RiskAssessmentCard(
                             Icon(
                                 imageVector = Icons.Default.Lock,
                                 contentDescription = "Cryptographic Seal",
-                                tint = TrustCyan,
-                                modifier = Modifier.size(14.dp)
+                                tint = TrustBlue,
+                                modifier = Modifier.size(15.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = "SHA-256 Parameter Binding Digest",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = SlateLight
+                                color = CharcoalText
                             )
                         }
                         Text(
                             text = "VERIFIED SEAL",
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Bold,
-                            color = TrustCyan
+                            color = TrustBlue
                         )
                     }
                     Spacer(modifier = Modifier.height(4.dp))
@@ -165,7 +175,7 @@ fun RiskAssessmentCard(
                         text = riskResult.boundHash,
                         fontSize = 10.sp,
                         fontFamily = FontFamily.Monospace,
-                        color = TrustCyan,
+                        color = TrustBlue,
                         maxLines = 1,
                         modifier = Modifier.testTag("binding_hash_preview")
                     )
@@ -174,12 +184,12 @@ fun RiskAssessmentCard(
 
             // Signals List
             if (riskResult.signals.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = "Active Anomaly Signals:",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = SlateLight
+                    color = CharcoalText
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 riskResult.signals.forEach { signal ->
@@ -189,45 +199,45 @@ fun RiskAssessmentCard(
                     ) {
                         Box(
                             modifier = Modifier
-                                .padding(top = 4.dp)
+                                .padding(top = 5.dp)
                                 .size(6.dp)
                                 .clip(CircleShape)
                                 .background(tierColor)
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = signal,
-                            fontSize = 11.sp,
-                            color = SlateLight
+                            fontSize = 12.sp,
+                            color = CharcoalText
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // AI Insights Callout
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Navy900)
-                    .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
-                    .padding(10.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(TrustBlueContainer)
+                    .border(1.dp, Color(0xFFBFDBFE), RoundedCornerShape(10.dp))
+                    .padding(12.dp)
             ) {
                 Row(verticalAlignment = Alignment.Top) {
                     Icon(
                         imageVector = Icons.Default.AutoAwesome,
                         contentDescription = "AI",
-                        tint = TrustCyan,
+                        tint = TrustBlue,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = riskResult.aiInsights,
                         fontSize = 11.sp,
-                        color = SlateLight,
-                        lineHeight = 15.sp
+                        color = CharcoalText,
+                        lineHeight = 16.sp
                     )
                 }
             }

@@ -36,38 +36,47 @@ fun TransactionHistoryCard(
             .fillMaxWidth()
             .testTag("transaction_history_card"),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Navy800),
+        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(18.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(
-                    imageVector = Icons.Default.History,
-                    contentDescription = "History",
-                    tint = TrustCyan,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(TrustBlueContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.History,
+                        contentDescription = "History",
+                        tint = TrustBlue,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(10.dp))
                 Text(
                     text = "Recent Transactions Ledger",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = WhitePure
+                    color = CharcoalText
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             if (transactions.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp),
+                        .padding(vertical = 20.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -89,9 +98,9 @@ fun TransactionHistoryCard(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(Navy700)
+                                .background(SurfaceVariant)
                                 .border(1.dp, CardBorder, RoundedCornerShape(10.dp))
-                                .padding(10.dp)
+                                .padding(12.dp)
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -104,23 +113,24 @@ fun TransactionHistoryCard(
                                             text = tx.recipient,
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = WhitePure
+                                            color = CharcoalText
                                         )
-                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Spacer(modifier = Modifier.width(8.dp))
                                         Surface(
-                                            shape = RoundedCornerShape(4.dp),
-                                            color = statusBg
+                                            shape = RoundedCornerShape(6.dp),
+                                            color = statusBg,
+                                            border = androidx.compose.foundation.BorderStroke(1.dp, statusColor.copy(alpha = 0.3f))
                                         ) {
                                             Text(
                                                 text = tx.status,
                                                 fontSize = 9.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = statusColor,
-                                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                             )
                                         }
                                     }
-                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Spacer(modifier = Modifier.height(3.dp))
                                     Text(
                                         text = "${tx.id} • ${timeFormat.format(Date(tx.timestamp))}",
                                         fontSize = 10.sp,
@@ -128,11 +138,12 @@ fun TransactionHistoryCard(
                                         color = SlateText
                                     )
                                     if (tx.bindingHash.isNotEmpty()) {
+                                        Spacer(modifier = Modifier.height(2.dp))
                                         Text(
                                             text = "SHA: ${tx.bindingHash.take(16)}...",
                                             fontSize = 9.sp,
                                             fontFamily = FontFamily.Monospace,
-                                            color = TrustCyan
+                                            color = TrustBlue
                                         )
                                     }
                                 }
@@ -145,6 +156,7 @@ fun TransactionHistoryCard(
                                         color = if (isApproved) SecurityGreen else SecurityRed
                                     )
                                     if (tx.balanceAfter != null) {
+                                        Spacer(modifier = Modifier.height(2.dp))
                                         Text(
                                             text = "Bal: ${CryptoUtils.formatIndianCurrency(tx.balanceAfter)}",
                                             fontSize = 10.sp,

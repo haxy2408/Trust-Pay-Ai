@@ -50,7 +50,8 @@ fun DistanceClassifierView(
     Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Navy800),
+            colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
             border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
             modifier = Modifier
                 .fillMaxWidth()
@@ -59,7 +60,7 @@ fun DistanceClassifierView(
                 .testTag("distance_classifier_dialog")
         ) {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(18.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -67,18 +68,26 @@ fun DistanceClassifierView(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.LocationOn,
-                            contentDescription = null,
-                            tint = SecurityGreen,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(SecurityGreenBg),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = null,
+                                tint = SecurityGreen,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = "Geofencing Classifier",
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
-                            color = WhitePure
+                            color = CharcoalText
                         )
                     }
 
@@ -87,14 +96,14 @@ fun DistanceClassifierView(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // City Coordinates Preset Chips
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     val presets = listOf(
                         Triple("Mumbai BKC", 19.0674, 72.8687),
@@ -111,51 +120,52 @@ fun DistanceClassifierView(
                                 userLon = lon
                             },
                             shape = RoundedCornerShape(12.dp),
-                            color = if (isSelected) SecurityGreenBg else Navy700,
+                            color = if (isSelected) SecurityGreenBg else SurfaceVariant,
                             border = androidx.compose.foundation.BorderStroke(1.dp, if (isSelected) SecurityGreen else CardBorder)
                         ) {
                             Text(
                                 text = city,
-                                fontSize = 11.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = if (isSelected) SecurityGreen else WhitePure,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                color = if (isSelected) SecurityGreen else CharcoalText,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // Rule Legend Card
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Navy700)
-                        .padding(8.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(SurfaceVariant)
+                        .border(1.dp, CardBorder, RoundedCornerShape(10.dp))
+                        .padding(10.dp)
                 ) {
                     Column {
                         Text(
                             text = "Distance Tier Classifications:",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = SlateLight
+                            color = CharcoalText
                         )
-                        Spacer(modifier = Modifier.height(3.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("0-10km: Usual (Green)", fontSize = 10.sp, color = SecurityGreen)
-                            Text("10-20km: Medium (Yellow)", fontSize = 10.sp, color = SecurityAmber)
-                            Text("20-30km: Far (Orange)", fontSize = 10.sp, color = Color(0xFFF97316))
-                            Text(">30km: High (Red)", fontSize = 10.sp, color = SecurityRed)
+                            Text("0-10km: Usual", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = SecurityGreen)
+                            Text("10-20km: Medium", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = SecurityAmber)
+                            Text("20-30km: Far", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFFEA580C))
+                            Text(">30km: High", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = SecurityRed)
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // Filter & Add row
                 Row(
@@ -165,22 +175,22 @@ fun DistanceClassifierView(
                 ) {
                     Text(
                         text = "Destinations (${classifiedLocations.size}):",
-                        fontSize = 12.sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = SlateLight
+                        color = CharcoalText
                     )
 
                     TextButton(
                         onClick = { showAddDialog = true },
                         contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = null, tint = TrustCyan, modifier = Modifier.size(14.dp))
+                        Icon(Icons.Default.Add, contentDescription = null, tint = TrustBlue, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Add Location", fontSize = 11.sp, color = TrustCyan)
+                        Text("Add Location", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TrustBlue)
                     }
                 }
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -190,7 +200,7 @@ fun DistanceClassifierView(
                         val (indicatorColor, indicatorBg) = when (item.colorIndicator) {
                             "GREEN" -> Pair(SecurityGreen, SecurityGreenBg)
                             "YELLOW" -> Pair(SecurityAmber, SecurityAmberBg)
-                            "ORANGE" -> Pair(Color(0xFFF97316), Color(0xFF7C2D12))
+                            "ORANGE" -> Pair(Color(0xFFEA580C), Color(0xFFFFF7ED))
                             else -> Pair(SecurityRed, SecurityRedBg)
                         }
 
@@ -198,9 +208,9 @@ fun DistanceClassifierView(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(Navy700)
+                                .background(SurfaceVariant)
                                 .border(1.dp, CardBorder, RoundedCornerShape(10.dp))
-                                .padding(10.dp)
+                                .padding(12.dp)
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -212,7 +222,7 @@ fun DistanceClassifierView(
                                         text = item.location.name,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = WhitePure
+                                        color = CharcoalText
                                     )
                                     Text(
                                         text = "${item.location.category} • ${item.location.address}",
@@ -231,7 +241,7 @@ fun DistanceClassifierView(
                                 Surface(
                                     shape = RoundedCornerShape(8.dp),
                                     color = indicatorBg,
-                                    border = androidx.compose.foundation.BorderStroke(1.dp, indicatorColor)
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, indicatorColor.copy(alpha = 0.4f))
                                 ) {
                                     Text(
                                         text = item.formattedDistance,

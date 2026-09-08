@@ -40,7 +40,8 @@ fun AdminSocModal(
     Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Navy800),
+            colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
             border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
             modifier = Modifier
                 .fillMaxWidth()
@@ -48,7 +49,7 @@ fun AdminSocModal(
                 .testTag("admin_soc_modal")
         ) {
             Column(
-                modifier = Modifier.padding(18.dp)
+                modifier = Modifier.padding(20.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -56,18 +57,26 @@ fun AdminSocModal(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Analytics,
-                            contentDescription = null,
-                            tint = TrustCyan,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(TrustBlueContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Analytics,
+                                contentDescription = null,
+                                tint = TrustBlue,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = "TrustPay Security SOC",
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
-                            color = WhitePure
+                            color = CharcoalText
                         )
                     }
 
@@ -92,7 +101,7 @@ fun AdminSocModal(
                     MetricBox(
                         title = "Blocked / Tamper",
                         value = "$blockedCount events",
-                        color = if (blockedCount > 0) SecurityRed else SlateLight,
+                        color = if (blockedCount > 0) SecurityRed else SlateText,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -132,7 +141,7 @@ fun AdminSocModal(
                     MetricBox(
                         title = "Rotating QR Tokens",
                         value = "${qrTokens.size} created",
-                        color = TrustCyan,
+                        color = TrustBlue,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -144,16 +153,16 @@ fun AdminSocModal(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(10.dp))
-                        .background(Navy700)
+                        .background(SurfaceVariant)
                         .border(1.dp, CardBorder, RoundedCornerShape(10.dp))
-                        .padding(10.dp)
+                        .padding(12.dp)
                 ) {
                     Column {
                         Text(
                             text = "Security Invariants & Protocol Guarantees:",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = TrustCyan
+                            color = TrustBlue
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
@@ -161,9 +170,9 @@ fun AdminSocModal(
                                     "• 30s Rotating P2P QR Tokens prevent replay attacks and photo theft.\n" +
                                     "• 5-Minute Velocity Anomaly Window halts brute force transfers.\n" +
                                     "• 2-Signer Corporate Dual Authorization prevents insider embezzlement.",
-                            fontSize = 10.sp,
-                            color = SlateLight,
-                            lineHeight = 15.sp
+                            fontSize = 11.sp,
+                            color = SlateText,
+                            lineHeight = 16.sp
                         )
                     }
                 }
@@ -182,12 +191,12 @@ private fun MetricBox(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(Navy700)
+            .background(SurfaceVariant)
             .border(1.dp, CardBorder, RoundedCornerShape(10.dp))
-            .padding(10.dp)
+            .padding(12.dp)
     ) {
         Column {
-            Text(text = title, fontSize = 10.sp, color = SlateText)
+            Text(text = title, fontSize = 10.sp, fontWeight = FontWeight.Medium, color = SlateText)
             Spacer(modifier = Modifier.height(4.dp))
             Text(text = value, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = color)
         }

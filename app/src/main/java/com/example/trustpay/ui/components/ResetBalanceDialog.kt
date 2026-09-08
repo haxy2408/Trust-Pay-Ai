@@ -1,5 +1,6 @@
 package com.example.trustpay.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -27,8 +28,9 @@ fun ResetBalanceDialog(
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Navy800),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
             border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
             modifier = Modifier
                 .fillMaxWidth()
@@ -36,23 +38,30 @@ fun ResetBalanceDialog(
                 .testTag("reset_balance_dialog")
         ) {
             Column(
-                modifier = Modifier.padding(20.dp),
+                modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(
-                    imageVector = Icons.Default.AccountBalanceWallet,
-                    contentDescription = null,
-                    tint = TrustCyan,
-                    modifier = Modifier.size(32.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .size(52.dp)
+                        .background(TrustBlueContainer, RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AccountBalanceWallet,
+                        contentDescription = null,
+                        tint = TrustBlue,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
                     text = "Reset Demo Balance",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = WhitePure
+                    color = CharcoalText
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))
@@ -60,10 +69,11 @@ fun ResetBalanceDialog(
                 Text(
                     text = "Select a preset or enter a custom liquidity amount for testing:",
                     fontSize = 12.sp,
-                    color = SlateLight
+                    color = SlateText,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Presets
                 Row(
@@ -74,23 +84,23 @@ fun ResetBalanceDialog(
                         Surface(
                             onClick = { amountInput = preset.toString() },
                             shape = RoundedCornerShape(8.dp),
-                            color = Navy700,
-                            border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
+                            color = if (amountInput == preset.toString()) TrustBlueContainer else SurfaceVariant,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, if (amountInput == preset.toString()) TrustBlue else CardBorder),
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
                                 text = "₹${preset / 1000}k",
-                                fontSize = 12.sp,
+                                fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = WhitePure,
-                                modifier = Modifier.padding(vertical = 8.dp),
+                                color = if (amountInput == preset.toString()) TrustBlue else CharcoalText,
+                                modifier = Modifier.padding(vertical = 10.dp),
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 OutlinedTextField(
                     value = amountInput,
@@ -102,15 +112,17 @@ fun ResetBalanceDialog(
                         .fillMaxWidth()
                         .testTag("custom_balance_input"),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = TrustCyan,
+                        focusedBorderColor = TrustBlue,
                         unfocusedBorderColor = CardBorder,
-                        focusedTextColor = WhitePure,
-                        unfocusedTextColor = SlateLight
+                        focusedTextColor = CharcoalText,
+                        unfocusedTextColor = CharcoalText,
+                        focusedLabelColor = TrustBlue,
+                        unfocusedLabelColor = SlateMuted
                     ),
                     shape = RoundedCornerShape(10.dp)
                 )
 
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -120,10 +132,10 @@ fun ResetBalanceDialog(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = SlateLight),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = SlateText),
                         border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
                     ) {
-                        Text("Cancel")
+                        Text("Cancel", fontWeight = FontWeight.SemiBold)
                     }
 
                     Button(
@@ -133,9 +145,9 @@ fun ResetBalanceDialog(
                         },
                         modifier = Modifier.weight(1f).testTag("confirm_reset_button"),
                         shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = TrustCyan)
+                        colors = ButtonDefaults.buttonColors(containerColor = TrustBlue)
                     ) {
-                        Text("Reset", color = Navy900, fontWeight = FontWeight.Bold)
+                        Text("Reset", color = WhitePure, fontWeight = FontWeight.Bold)
                     }
                 }
             }

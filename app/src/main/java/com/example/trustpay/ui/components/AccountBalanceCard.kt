@@ -31,11 +31,12 @@ fun AccountBalanceCard(
             .fillMaxWidth()
             .testTag("account_balance_card"),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Navy800),
+        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(18.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -43,13 +44,21 @@ fun AccountBalanceCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.AccountBalanceWallet,
-                        contentDescription = "Wallet",
-                        tint = TrustCyan,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(TrustBlueContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AccountBalanceWallet,
+                            contentDescription = "Wallet",
+                            tint = TrustBlue,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
                     Text(
                         text = "Available Demo Liquidity",
                         fontSize = 13.sp,
@@ -67,39 +76,39 @@ fun AccountBalanceCard(
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = "Reset",
-                        tint = TrustCyan,
+                        tint = TrustBlue,
                         modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = "Reset Balance",
                         fontSize = 12.sp,
-                        color = TrustCyan,
+                        color = TrustBlue,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = CryptoUtils.formatIndianCurrency(balance),
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = WhitePure,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = CharcoalText,
                 modifier = Modifier.testTag("balance_amount_text")
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // Security assurance pill
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Navy700)
-                    .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
-                    .padding(horizontal = 10.dp, vertical = 8.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(SecurityGreenBg)
+                    .border(1.dp, SecurityGreenBorder, RoundedCornerShape(10.dp))
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -117,14 +126,15 @@ fun AccountBalanceCard(
                         Text(
                             text = "Hardware Keystore Guard Active",
                             fontSize = 12.sp,
-                            color = SlateLight
+                            fontWeight = FontWeight.Medium,
+                            color = CharcoalText
                         )
                     }
 
                     Text(
                         text = "Zero-Trust Sealed",
                         fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Bold,
                         color = SecurityGreen
                     )
                 }

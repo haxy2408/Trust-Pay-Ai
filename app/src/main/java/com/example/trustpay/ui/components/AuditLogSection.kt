@@ -41,75 +41,106 @@ fun AuditLogSection(
             .fillMaxWidth()
             .testTag("audit_log_section"),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Navy800),
+        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(18.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(
-                    imageVector = Icons.Default.ListAlt,
-                    contentDescription = "Audit Log",
-                    tint = TrustCyan,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(TrustBlueContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ListAlt,
+                        contentDescription = "Audit Log",
+                        tint = TrustBlue,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(10.dp))
                 Text(
                     text = "Zero-Trust Security Audit Log",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = WhitePure
+                    color = CharcoalText
                 )
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Filter Chips
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 FilterChip(
                     selected = selectedFilter == null,
                     onClick = { selectedFilter = null },
-                    label = { Text("ALL (${logs.size})", fontSize = 11.sp) }
+                    label = { Text("ALL (${logs.size})", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = TrustBlue,
+                        selectedLabelColor = WhitePure,
+                        containerColor = SurfaceVariant,
+                        labelColor = CharcoalText
+                    ),
+                    border = FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = selectedFilter == null,
+                        borderColor = if (selectedFilter == null) TrustBlue else CardBorder
+                    )
                 )
                 AuditStatus.values().forEach { status ->
                     val count = logs.count { it.status == status }
                     FilterChip(
                         selected = selectedFilter == status,
                         onClick = { selectedFilter = if (selectedFilter == status) null else status },
-                        label = { Text("${status.name} ($count)", fontSize = 11.sp) }
+                        label = { Text("${status.name} ($count)", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = TrustBlue,
+                            selectedLabelColor = WhitePure,
+                            containerColor = SurfaceVariant,
+                            labelColor = CharcoalText
+                        ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = selectedFilter == status,
+                            borderColor = if (selectedFilter == status) TrustBlue else CardBorder
+                        )
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 filteredLogs.take(8).forEach { log ->
                     val (badgeColor, badgeBg) = when (log.status) {
                         AuditStatus.SUCCESS -> Pair(SecurityGreen, SecurityGreenBg)
                         AuditStatus.WARNING -> Pair(SecurityAmber, SecurityAmberBg)
                         AuditStatus.DANGER -> Pair(SecurityRed, SecurityRedBg)
-                        AuditStatus.INFO -> Pair(TrustCyan, Navy700)
+                        AuditStatus.INFO -> Pair(TrustBlue, TrustBlueContainer)
                     }
 
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Navy700)
-                            .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
-                            .padding(8.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(SurfaceVariant)
+                            .border(1.dp, CardBorder, RoundedCornerShape(10.dp))
+                            .padding(10.dp)
                     ) {
                         Column {
                             Row(
@@ -119,23 +150,24 @@ fun AuditLogSection(
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Surface(
-                                        shape = RoundedCornerShape(4.dp),
-                                        color = badgeBg
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = badgeBg,
+                                        border = androidx.compose.foundation.BorderStroke(1.dp, badgeColor.copy(alpha = 0.3f))
                                     ) {
                                         Text(
                                             text = log.status.name,
                                             fontSize = 9.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = badgeColor,
-                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                            modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
                                         )
                                     }
-                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = log.title,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = WhitePure
+                                        color = CharcoalText
                                     )
                                 }
                                 Text(
@@ -144,19 +176,19 @@ fun AuditLogSection(
                                     color = SlateText
                                 )
                             }
-                            Spacer(modifier = Modifier.height(3.dp))
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = log.details,
                                 fontSize = 11.sp,
-                                color = SlateLight
+                                color = SlateText
                             )
                             if (log.hash != null) {
-                                Spacer(modifier = Modifier.height(2.dp))
+                                Spacer(modifier = Modifier.height(3.dp))
                                 Text(
                                     text = "Digest: ${log.hash.take(20)}...",
                                     fontSize = 9.sp,
                                     fontFamily = FontFamily.Monospace,
-                                    color = TrustCyan
+                                    color = TrustBlue
                                 )
                             }
                         }

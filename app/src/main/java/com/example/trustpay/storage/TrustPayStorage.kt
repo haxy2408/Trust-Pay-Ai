@@ -15,6 +15,7 @@ object TrustPayStorage {
     private val transactions = mutableListOf<PaymentTransaction>()
     private val auditLogs = mutableListOf<AuditLogEntry>()
     private val dualAuthTransactions = mutableListOf<DualAuthTransaction>()
+    private val secondSignatureTransactions = mutableListOf<SecondSignatureTransaction>()
     private val coSigners = mutableListOf<CoSigner>()
     private val qrTokens = mutableMapOf<String, QrPaymentRequest>()
     private val locations = mutableListOf<TargetLocation>()
@@ -94,6 +95,55 @@ object TrustPayStorage {
                 details = "SHA-256 parameter binding and anomaly detection engine initialized.",
                 status = AuditStatus.SUCCESS,
                 hash = genesisHash
+            )
+        )
+
+        // Seed Initial Second Signature Transaction (High-Risk Enterprise Transfer)
+        val seedTxId = "TXN_2ND_CORP88"
+        val seedNonce = "NONCE_INIT_901"
+        val seedCreatedAt = System.currentTimeMillis() - 30 * 1000L
+        val seedFingerprint = com.example.trustpay.security.SecondSignatureEngine.computeTransactionFingerprint(
+            transactionId = seedTxId,
+            senderId = "rahul@example.com",
+            recipientId = "infra.cloud@icicibank",
+            amount = 85000.0,
+            currency = "INR",
+            createdAt = seedCreatedAt,
+            transactionType = "CORPORATE_PAYMENT",
+            transactionVersion = 1,
+            nonce = seedNonce
+        )
+        val seedFirstSig = com.example.trustpay.security.SecondSignatureEngine.generateSignerSignature(
+            signerId = "rahul@example.com",
+            signerName = "Rahul Sharma",
+            signerRole = "Initiator / Primary Signer",
+            transactionId = seedTxId,
+            transactionFingerprint = seedFingerprint,
+            transactionVersion = 1,
+            timestamp = seedCreatedAt,
+            nonce = seedNonce
+        )
+        secondSignatureTransactions.add(
+            SecondSignatureTransaction(
+                id = seedTxId,
+                senderId = "rahul@example.com",
+                senderName = "Rahul Sharma",
+                recipientId = "infra.cloud@icicibank",
+                amount = 85000.0,
+                currency = "INR",
+                transactionType = "CORPORATE_PAYMENT",
+                purposeDescription = "Multi-Region Cloud Infrastructure Expansion",
+                status = SecondSignatureStatus.SECOND_SIGNATURE_REQUIRED,
+                transactionVersion = 1,
+                transactionFingerprint = seedFingerprint,
+                createdAt = seedCreatedAt,
+                expiresAt = seedCreatedAt + com.example.trustpay.security.SecondSignatureEngine.SECOND_SIGNATURE_EXPIRY_MS,
+                designatedSecondSignerId = "priya@example.com",
+                designatedSecondSignerName = "Priya Patel",
+                designatedSecondSignerRole = "Chief Financial Officer (CFO)",
+                firstSignature = seedFirstSig,
+                riskScore = 65,
+                nonce = seedNonce
             )
         )
     }
@@ -309,6 +359,38 @@ object TrustPayStorage {
     }
 
     fun getQrToken(tokenId: String): QrPaymentRequest? = qrTokens[tokenId]
+
+    // Second Signature Transactions
+    fun getSecondSignatureTransactions(): List<SecondSignatureTransaction> {
+        val now = System.currentTimeMillis()
+        secondSignatureTransactions.forEachIndexed { index, tx ->
+            if ((tx.status == SecondSignatureStatus.SECOND_SIGNATURE_REQUIRED ||
+                        tx.status == SecondSignatureStatus.PENDING) && now > tx.expiresAt) {
+                secondSignatureTransactions[index] = tx.copy(
+                    status = SecondSignatureStatus.EXPIRED,
+                    failureReason = "10-minute approval window elapsed."
+                )
+            }
+        }
+        return secondSignatureTransactions.toList().sortedByDescending { it.createdAt }
+    }
+
+    fun getSecondSignatureTransaction(id: String): SecondSignatureTransaction? {
+        return secondSignatureTransactions.firstOrNull { it.id == id }
+    }
+
+    fun addSecondSignatureTransaction(tx: SecondSignatureTransaction) {
+        secondSignatureTransactions.add(0, tx)
+    }
+
+    fun updateSecondSignatureTransaction(tx: SecondSignatureTransaction) {
+        val index = secondSignatureTransactions.indexOfFirst { it.id == tx.id }
+        if (index != -1) {
+            secondSignatureTransactions[index] = tx
+        } else {
+            secondSignatureTransactions.add(0, tx)
+        }
+    }
 
     // Locations
     fun getLocations(): List<TargetLocation> = locations.toList()

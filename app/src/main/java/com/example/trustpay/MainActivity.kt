@@ -11,12 +11,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.trustpay.ai.GeminiSecurityAnalysis
+import com.example.trustpay.authentication.LoginManager
+import com.example.trustpay.backend.AuthenticationApi
+import com.example.trustpay.backend.SecurityApi
+import com.example.trustpay.backend.TransactionApi
 import com.example.trustpay.model.*
-import com.example.trustpay.security.CryptoUtils
+import com.example.trustpay.security.*
 import com.example.trustpay.services.RiskEngineService
 import com.example.trustpay.storage.TrustPayStorage
+import com.example.trustpay.transactions.*
 import com.example.trustpay.ui.components.*
-import com.example.trustpay.ui.theme.Navy900
+import com.example.trustpay.ui.login_screen.LoginScreen
+import com.example.trustpay.ui.otp_screen.OtpScreen
+import com.example.trustpay.ui.security_dashboard.SecurityDashboard
+import com.example.trustpay.ui.verification_screen.VerificationScreen
+import com.example.trustpay.ui.theme.SurfaceBg
 import com.example.trustpay.ui.theme.TrustPayTheme
 
 class MainActivity : ComponentActivity() {
@@ -52,6 +62,13 @@ fun TrustPayApp() {
     var showDistanceClassifier by remember { mutableStateOf(false) }
     var showAdminSocModal by remember { mutableStateOf(false) }
     var showDemoScenarioModal by remember { mutableStateOf(false) }
+    var showSecurityDashboard by remember { mutableStateOf(false) }
+    var showOtpModal by remember { mutableStateOf(false) }
+
+    // Three-Step Verification Pipeline State
+    var activeVerificationSession by remember { mutableStateOf<TransactionVerification.VerificationSession?>(null) }
+    var lastAiAssessment by remember { mutableStateOf<GeminiSecurityAnalysis.AiSecurityResponse?>(null) }
+    var lastTransactionRecord by remember { mutableStateOf<PaymentTransactionRecord?>(null) }
 
     // Verification Dialog state
     var verificationState by remember { mutableStateOf<VerificationState?>(null) }
@@ -120,37 +137,51 @@ fun TrustPayApp() {
         val amt = amountInput.toDoubleOrNull() ?: 0.0
         if (amt <= 0) return
 
-        val txId = CryptoUtils.generateTransactionId()
-        val snapshot = CryptoUtils.createSnapshot(txId, recipientInput, amt)
-        activeSnapshot = snapshot
+        val userEmail = activeUser?.email ?: "alex.pay@trustpay.demo"
+        val creation = TransactionCreation.createTransaction(
+            TransactionCreation.CreationRequest(
+                senderEmail = userEmail,
+                recipientVpa = recipientInput,
+                amount = amt
+            )
+        )
 
-        val risk = RiskEngineService.evaluateTransactionRisk(txId, recipientInput, amt, riskFactors)
+        if (!creation.isValid) {
+            TrustPayStorage.addAuditLog(
+                "Transaction Blocked",
+                creation.errorMessage ?: "Invalid transaction parameters",
+                AuditStatus.DANGER
+            )
+            refreshState()
+            return
+        }
 
-        if (risk.score < 35 && !risk.isVelocityAnomaly) {
-            // Nominal Low-Risk -> Instant 1-click release
-            executeTransferFinal(txId, recipientInput, amt, risk.score, snapshot.bindingHash)
-        } else {
-            // Requires verification step
-            val nextStep = if (risk.requiresOtp) {
-                VerificationStep.DEMO_OTP
-            } else {
-                VerificationStep.BIOMETRIC
-            }
+        // Initialize 3-Step Verification Session
+        val session = TransactionVerification.startSession(
+            transactionId = creation.transactionId,
+            senderEmail = userEmail,
+            recipient = recipientInput,
+            amount = amt,
+            bindingHash = creation.bindingHash
+        )
 
-            verificationState = VerificationState(
-                transactionId = txId,
-                recipient = recipientInput,
-                amount = amt,
-                currentStep = nextStep,
-                isVelocityAnomaly = risk.isVelocityAnomaly,
-                designatedFinger = "Right Index Finger",
-                challengeData = ChallengeData(
-                    question = "Confirm beneficiary domain for $recipientInput:",
-                    expectedAnswer = recipientInput.substringAfter("@")
-                ),
-                demoOtp = CryptoUtils.generateDemoOtp()
+        // Evaluate Step 1: Device Recognition
+        val registeredDev = activeUser?.registeredDeviceId
+        val devResult = DeviceRecognition.evaluateDevice(registeredDev)
+        session.deviceResult = devResult
+
+        // Evaluate location anomaly if enabled in risk factors
+        if (riskFactors.unusualContext) {
+            session.locationResult = LocationSecurity.evaluateTransactionLocation(
+                userHomeLat = 19.0760,
+                userHomeLon = 72.8777,
+                txLat = 28.7041,
+                txLon = 77.1025,
+                maxAllowedKm = 100.0
             )
         }
+
+        activeVerificationSession = session
     }
 
     if (activeUser == null) {
@@ -164,7 +195,11 @@ fun TrustPayApp() {
             topBar = {
                 HeaderBanner(
                     activeUser = activeUser,
-                    pendingDualAuthCount = dualAuthList.count { it.status == DualAuthStatus.PENDING_SECOND_AUTH },
+                    pendingDualAuthCount = dualAuthList.count { it.status == DualAuthStatus.PENDING_SECOND_AUTH } +
+                            TrustPayStorage.getSecondSignatureTransactions().count {
+                                it.status == com.example.trustpay.model.SecondSignatureStatus.SECOND_SIGNATURE_REQUIRED ||
+                                        it.status == com.example.trustpay.model.SecondSignatureStatus.PENDING
+                            },
                     onSwitchUser = {
                         val users = TrustPayStorage.getUsers()
                         val other = users.find { it.email != activeUser?.email } ?: users.first()
@@ -180,10 +215,11 @@ fun TrustPayApp() {
                     onOpenDualAuth = { showDualAuthModal = true },
                     onOpenDistance = { showDistanceClassifier = true },
                     onOpenSoc = { showAdminSocModal = true },
-                    onOpenScenarios = { showDemoScenarioModal = true }
+                    onOpenScenarios = { showDemoScenarioModal = true },
+                    onOpenDashboard = { showSecurityDashboard = true }
                 )
             },
-            containerColor = Navy900
+            containerColor = SurfaceBg
         ) { paddingValues ->
             Column(
                 modifier = Modifier
@@ -290,6 +326,129 @@ fun TrustPayApp() {
                     riskFactors = factors
                 },
                 onDismiss = { showDemoScenarioModal = false }
+            )
+        }
+
+        // Three-Step Verification Dialog (Step 1 Device -> Step 2 Biometric -> Step 3 Face ID)
+        activeVerificationSession?.let { session ->
+            if (session.currentPhase != VerificationPhase.COMPLETED && !showOtpModal) {
+                VerificationScreen(
+                    session = session,
+                    onStep1DeviceComplete = {
+                        session.currentPhase = VerificationPhase.STEP_2_BIOMETRIC
+                    },
+                    onStep2BiometricComplete = {
+                        session.biometricVerified = true
+                        session.currentPhase = VerificationPhase.STEP_3_FACE
+                    },
+                    onStep3FaceComplete = {
+                        session.faceResult = FaceVerification.FaceVerificationResult(
+                            faceVerified = true,
+                            authenticationMethod = "APPROVED_SECURITY_PIN",
+                            isHardwareFaceAvailable = false,
+                            riskLevel = "LOW",
+                            statusMessage = "Face/PIN authorization verified"
+                        )
+                    },
+                    onProceedToOtp = {
+                        showOtpModal = true
+                    },
+                    onRegisterCurrentDevice = { devId, devName ->
+                        AuthenticationApi.registerDeviceToUser(
+                            userEmail = session.senderEmail,
+                            newDeviceId = devId,
+                            newDeviceName = devName
+                        )
+                        TrustPayStorage.addAuditLog(
+                            "Device Registered",
+                            "Device $devName ($devId) bound to user profile.",
+                            AuditStatus.SUCCESS
+                        )
+                        refreshState()
+                    },
+                    onCancel = {
+                        activeVerificationSession = null
+                    }
+                )
+            }
+        }
+
+        // Demo Bank OTP Dialog
+        if (showOtpModal && activeVerificationSession != null) {
+            val session = activeVerificationSession!!
+            OtpScreen(
+                onOtpVerified = {
+                    session.otpVerified = true
+                    showOtpModal = false
+
+                    // AI Transaction Risk Analysis & Structured Assessment
+                    val ai = TransactionVerification.performAiAnalysis(session)
+                    lastAiAssessment = ai
+
+                    // Deterministic Backend Authorization
+                    val outcome = TransactionVerification.completeAuthorization(session)
+                    when (outcome) {
+                        is TransactionAuthorization.AuthorizationOutcome.Approved -> {
+                            executeTransferFinal(
+                                session.transactionId,
+                                session.recipient,
+                                session.amount,
+                                ai.riskScore,
+                                session.bindingHash
+                            )
+                            lastTransactionRecord = outcome.transaction
+                        }
+                        is TransactionAuthorization.AuthorizationOutcome.Blocked -> {
+                            TrustPayStorage.addAuditLog(
+                                "TRANSACTION BLOCKED",
+                                outcome.reason,
+                                AuditStatus.DANGER,
+                                session.bindingHash
+                            )
+                            lastTransactionRecord = PaymentTransactionRecord(
+                                transactionId = session.transactionId,
+                                senderEmail = session.senderEmail,
+                                recipient = session.recipient,
+                                amount = session.amount,
+                                status = "BLOCKED",
+                                riskLevel = ai.riskLevel,
+                                riskScore = ai.riskScore,
+                                deviceVerified = session.deviceResult?.deviceVerified == true,
+                                biometricVerified = session.biometricVerified,
+                                faceVerified = session.faceResult?.faceVerified == true,
+                                otpVerified = session.otpVerified,
+                                bindingHash = session.bindingHash,
+                                recommendedAction = "BLOCK",
+                                notes = outcome.reason
+                            )
+                            refreshState()
+                        }
+                        is TransactionAuthorization.AuthorizationOutcome.RequiresExtraVerification -> {
+                            TrustPayStorage.addAuditLog(
+                                "EXTRA VERIFICATION MANDATED",
+                                outcome.reason,
+                                AuditStatus.WARNING,
+                                session.bindingHash
+                            )
+                        }
+                    }
+
+                    // Automatically reveal the Security Dashboard with full transparency
+                    showSecurityDashboard = true
+                },
+                onCancel = {
+                    showOtpModal = false
+                    activeVerificationSession = null
+                }
+            )
+        }
+
+        // Central Security Dashboard Modal
+        if (showSecurityDashboard) {
+            SecurityDashboard(
+                lastTransaction = lastTransactionRecord,
+                aiAssessment = lastAiAssessment,
+                onDismiss = { showSecurityDashboard = false }
             )
         }
 

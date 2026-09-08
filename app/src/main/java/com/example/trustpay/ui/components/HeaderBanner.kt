@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -33,13 +34,19 @@ fun HeaderBanner(
     onOpenDistance: () -> Unit,
     onOpenSoc: () -> Unit,
     onOpenScenarios: () -> Unit,
+    onOpenDashboard: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(Navy800)
-            .padding(top = 8.dp, bottom = 12.dp)
+            .background(SurfaceWhite)
+            .border(
+                width = 1.dp,
+                color = CardBorder,
+                shape = androidx.compose.ui.graphics.RectangleShape
+            )
+            .padding(top = 10.dp, bottom = 12.dp)
     ) {
         // Top row: Brand + Active user pill + Switch + Logout
         Row(
@@ -52,17 +59,17 @@ fun HeaderBanner(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(TrustCyan.copy(alpha = 0.2f))
-                        .border(1.dp, TrustCyan, RoundedCornerShape(8.dp)),
+                        .size(38.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(TrustBlueContainer)
+                        .border(1.dp, Color(0xFFBFDBFE), RoundedCornerShape(10.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Shield,
                         contentDescription = "Shield Logo",
-                        tint = TrustCyan,
-                        modifier = Modifier.size(20.dp)
+                        tint = TrustBlue,
+                        modifier = Modifier.size(22.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(10.dp))
@@ -71,12 +78,13 @@ fun HeaderBanner(
                         text = "TrustPay",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = WhitePure
+                        color = CharcoalText
                     )
                     Text(
                         text = "Zero-Trust Payment Security",
                         fontSize = 11.sp,
-                        color = TrustCyan
+                        fontWeight = FontWeight.Medium,
+                        color = TrustBlue
                     )
                 }
             }
@@ -86,19 +94,19 @@ fun HeaderBanner(
                 if (activeUser != null) {
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = Navy700,
+                        color = SurfaceVariant,
                         border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
                         modifier = Modifier.testTag("user_profile_pill")
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                         ) {
                             Box(
                                 modifier = Modifier
                                     .size(22.dp)
                                     .clip(CircleShape)
-                                    .background(ElectricBlue),
+                                    .background(TrustBlue),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
@@ -112,27 +120,27 @@ fun HeaderBanner(
                             Text(
                                 text = activeUser.fullName.substringBefore(" "),
                                 fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = SlateLight
+                                fontWeight = FontWeight.SemiBold,
+                                color = CharcoalText
                             )
                         }
                     }
                     Spacer(modifier = Modifier.width(6.dp))
                     IconButton(
                         onClick = onSwitchUser,
-                        modifier = Modifier.size(32.dp).testTag("switch_user_button")
+                        modifier = Modifier.size(34.dp).testTag("switch_user_button")
                     ) {
                         Icon(
                             imageVector = Icons.Default.Sync,
                             contentDescription = "Switch User",
-                            tint = TrustCyan,
+                            tint = TrustBlue,
                             modifier = Modifier.size(18.dp)
                         )
                     }
                 }
                 IconButton(
                     onClick = onLogout,
-                    modifier = Modifier.size(32.dp).testTag("logout_button")
+                    modifier = Modifier.size(34.dp).testTag("logout_button")
                 ) {
                     Icon(
                         imageVector = Icons.Default.ExitToApp,
@@ -144,7 +152,7 @@ fun HeaderBanner(
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Quick Navigation Pills Scrollable Row
         Row(
@@ -157,7 +165,7 @@ fun HeaderBanner(
             ActionChip(
                 label = "Scan & Pay",
                 icon = Icons.Default.QrCodeScanner,
-                color = ElectricBlue,
+                color = TrustBlue,
                 onClick = onOpenScan,
                 testTag = "action_scan_pay"
             )
@@ -169,7 +177,7 @@ fun HeaderBanner(
                 testTag = "action_receive_qr"
             )
             ActionChip(
-                label = "Dual Auth",
+                label = "2nd Signature",
                 icon = Icons.Default.VerifiedUser,
                 color = if (pendingDualAuthCount > 0) SecurityAmber else SlateText,
                 badge = if (pendingDualAuthCount > 0) "$pendingDualAuthCount" else null,
@@ -186,14 +194,21 @@ fun HeaderBanner(
             ActionChip(
                 label = "Security SOC",
                 icon = Icons.Default.Analytics,
-                color = SlateLight,
+                color = SlateText,
                 onClick = onOpenSoc,
                 testTag = "action_soc"
             )
             ActionChip(
+                label = "Security Dashboard",
+                icon = Icons.Default.Shield,
+                color = TrustBlue,
+                onClick = onOpenDashboard,
+                testTag = "action_security_dashboard"
+            )
+            ActionChip(
                 label = "Demo Guide",
                 icon = Icons.Default.PlayCircle,
-                color = BlueGlow,
+                color = TrustBlueLight,
                 onClick = onOpenScenarios,
                 testTag = "action_scenarios"
             )
@@ -212,14 +227,15 @@ private fun ActionChip(
 ) {
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(16.dp),
-        color = Navy700,
+        shape = RoundedCornerShape(12.dp),
+        color = SurfaceWhite,
+        shadowElevation = 1.dp,
         border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
         modifier = Modifier.testTag(testTag)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
         ) {
             Icon(
                 imageVector = icon,
@@ -232,21 +248,22 @@ private fun ActionChip(
                 text = label,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
-                color = WhitePure
+                color = CharcoalText
             )
             if (badge != null) {
                 Spacer(modifier = Modifier.width(6.dp))
                 Box(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .background(SecurityAmber)
-                        .padding(horizontal = 5.dp, vertical = 1.dp)
+                        .background(SecurityAmberBg)
+                        .border(1.dp, SecurityAmberBorder, CircleShape)
+                        .padding(horizontal = 6.dp, vertical = 1.dp)
                 ) {
                     Text(
                         text = badge,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Navy900
+                        color = SecurityAmber
                     )
                 }
             }

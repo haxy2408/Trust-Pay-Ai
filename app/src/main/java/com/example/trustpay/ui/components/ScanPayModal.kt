@@ -72,7 +72,8 @@ fun ScanPayModal(
     Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Navy800),
+            colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
             border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
             modifier = Modifier
                 .fillMaxWidth()
@@ -80,7 +81,7 @@ fun ScanPayModal(
                 .testTag("scan_pay_modal")
         ) {
             Column(
-                modifier = Modifier.padding(18.dp)
+                modifier = Modifier.padding(20.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -88,18 +89,26 @@ fun ScanPayModal(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.QrCodeScanner,
-                            contentDescription = null,
-                            tint = ElectricBlue,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(TrustBlueContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.QrCodeScanner,
+                                contentDescription = null,
+                                tint = TrustBlue,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = "Scan & Pay P2P Token",
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
-                            color = WhitePure
+                            color = CharcoalText
                         )
                     }
 
@@ -108,7 +117,7 @@ fun ScanPayModal(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 if (selectedToken == null) {
                     // Manual Payload or Active Token Picker
@@ -132,23 +141,23 @@ fun ScanPayModal(
                             .fillMaxWidth()
                             .testTag("scanned_uri_input"),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = TrustCyan,
+                            focusedBorderColor = TrustBlue,
                             unfocusedBorderColor = CardBorder,
-                            focusedTextColor = WhitePure,
-                            unfocusedTextColor = SlateLight
+                            focusedTextColor = CharcoalText,
+                            unfocusedTextColor = CharcoalText
                         ),
                         shape = RoundedCornerShape(8.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     Button(
                         onClick = { processPayload(manualUriInput) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(42.dp),
+                            .height(44.dp),
                         shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = ElectricBlue)
+                        colors = ButtonDefaults.buttonColors(containerColor = TrustBlue)
                     ) {
                         Text("Validate Payload", color = WhitePure, fontWeight = FontWeight.Bold)
                     }
@@ -169,10 +178,10 @@ fun ScanPayModal(
                         text = "Simulated Available Tokens (${availableTokens.size}):",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = SlateLight
+                        color = CharcoalText
                     )
 
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     if (availableTokens.isEmpty()) {
                         Text(
@@ -189,7 +198,7 @@ fun ScanPayModal(
                                 Surface(
                                     onClick = { processPayload(token.payloadUri) },
                                     shape = RoundedCornerShape(8.dp),
-                                    color = Navy700,
+                                    color = SurfaceVariant,
                                     border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
                                 ) {
                                     Row(
@@ -204,12 +213,13 @@ fun ScanPayModal(
                                                 text = token.receiverName,
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.Bold,
-                                                color = WhitePure
+                                                color = CharcoalText
                                             )
                                             Text(
                                                 text = "Amount: ${token.amount?.let { CryptoUtils.formatIndianCurrency(it) } ?: "Any"}",
                                                 fontSize = 11.sp,
-                                                color = TrustCyan
+                                                color = TrustBlue,
+                                                fontWeight = FontWeight.SemiBold
                                             )
                                         }
                                         Text(
@@ -230,9 +240,9 @@ fun ScanPayModal(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(10.dp))
-                            .background(Navy700)
+                            .background(SurfaceVariant)
                             .border(1.dp, CardBorder, RoundedCornerShape(10.dp))
-                            .padding(12.dp)
+                            .padding(14.dp)
                     ) {
                         Column {
                             Text(
@@ -246,7 +256,7 @@ fun ScanPayModal(
                                 text = token.receiverName,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = WhitePure
+                                color = CharcoalText
                             )
                             Text(
                                 text = token.receiverId,
@@ -256,15 +266,16 @@ fun ScanPayModal(
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "Amount: ${token.amount?.let { CryptoUtils.formatIndianCurrency(it) } ?: "₹500.00"}",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = TrustCyan
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = TrustBlue
                             )
                             if (token.note.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = "Note: ${token.note}",
                                     fontSize = 11.sp,
-                                    color = SlateLight
+                                    color = SlateText
                                 )
                             }
                         }
@@ -293,9 +304,9 @@ fun ScanPayModal(
                         enabled = !isProcessing
                     ) {
                         if (isProcessing) {
-                            CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Navy900)
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), color = WhitePure)
                         } else {
-                            Text("Confirm & Authorize Transfer", color = Navy900, fontWeight = FontWeight.Bold)
+                            Text("Confirm & Authorize Transfer", color = WhitePure, fontWeight = FontWeight.Bold)
                         }
                     }
 

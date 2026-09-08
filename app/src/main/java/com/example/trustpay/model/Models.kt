@@ -6,7 +6,8 @@ data class UserAccount(
     val mobileNumber: String,
     val passwordHash: String,
     val salt: String,
-    val registeredAt: Long = System.currentTimeMillis()
+    val registeredAt: Long = System.currentTimeMillis(),
+    val registeredDeviceId: String = "DEV-PIXEL-HQ-8821"
 )
 
 data class PaymentTransaction(
@@ -135,6 +136,71 @@ enum class DualAuthStatus {
     TAMPER_DETECTED,
     BLOCKED
 }
+
+enum class SecondSignatureStatus {
+    PENDING,
+    FIRST_SIGNATURE_COMPLETED,
+    SECOND_SIGNATURE_REQUIRED,
+    VERIFIED,
+    AUTHORIZED,
+    EXECUTED,
+    REJECTED,
+    EXPIRED,
+    FAILED,
+    TAMPER_DETECTED
+}
+
+data class TransactionSignature(
+    val signatureId: String,
+    val transactionId: String,
+    val signerId: String,
+    val signerName: String,
+    val signerRole: String = "Authorized Signer",
+    val signatureHash: String,
+    val transactionVersion: Int = 1,
+    val signedAt: Long = System.currentTimeMillis(),
+    val deviceFingerprint: String = "SECURE_DEVICE_ENCLAVE",
+    val status: String = "VALID"
+)
+
+data class SecondSignatureTransaction(
+    val id: String,
+    val senderId: String,
+    val senderName: String,
+    val recipientId: String,
+    val amount: Double,
+    val currency: String = "INR",
+    val transactionType: String = "HIGH_VALUE_PAYMENT",
+    val purposeDescription: String = "Commercial Infrastructure Settlement",
+    val status: SecondSignatureStatus = SecondSignatureStatus.SECOND_SIGNATURE_REQUIRED,
+    val transactionVersion: Int = 1,
+    val transactionFingerprint: String,
+    val createdAt: Long = System.currentTimeMillis(),
+    val expiresAt: Long = System.currentTimeMillis() + 10 * 60 * 1000L, // 10 minutes
+    val designatedSecondSignerId: String,
+    val designatedSecondSignerName: String,
+    val designatedSecondSignerRole: String = "Authorized Approver",
+    val firstSignature: TransactionSignature? = null,
+    val secondSignature: TransactionSignature? = null,
+    val executedAt: Long? = null,
+    val rejectionReason: String? = null,
+    val failureReason: String? = null,
+    val riskScore: Int = 25,
+    val nonce: String = ""
+) {
+    fun isExpired(): Boolean = System.currentTimeMillis() > expiresAt
+    fun getRemainingSeconds(): Long {
+        val diff = (expiresAt - System.currentTimeMillis()) / 1000
+        return if (diff > 0) diff else 0
+    }
+}
+
+data class SecondSignatureResult(
+    val success: Boolean,
+    val message: String,
+    val transaction: SecondSignatureTransaction? = null,
+    val errorCode: String? = null
+)
 
 data class DualAuthTransaction(
     val id: String,

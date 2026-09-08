@@ -1,34 +1,33 @@
 package com.example.trustpay.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
-private val TrustPayColorScheme = darkColorScheme(
-    primary = TrustCyan,
-    onPrimary = Navy900,
-    primaryContainer = Navy700,
-    onPrimaryContainer = TrustCyan,
+private val TrustPayLightColorScheme = lightColorScheme(
+    primary = TrustBlue,
+    onPrimary = WhitePure,
+    primaryContainer = TrustBlueContainer,
+    onPrimaryContainer = TrustBlue,
     secondary = ElectricBlue,
     onSecondary = WhitePure,
-    background = Navy900,
-    onBackground = WhitePure,
-    surface = Navy800,
-    onSurface = WhitePure,
-    surfaceVariant = Navy700,
-    onSurfaceVariant = SlateLight,
+    background = LightBackground,
+    onBackground = CharcoalText,
+    surface = SurfaceWhite,
+    onSurface = CharcoalText,
+    surfaceVariant = SurfaceVariant,
+    onSurfaceVariant = SlateText,
+    outline = CardBorder,
     error = SecurityRed,
     onError = WhitePure
 )
 
 @Composable
 fun TrustPayTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colorScheme = TrustPayColorScheme,
+        colorScheme = TrustPayLightColorScheme,
         content = content
     )
 }

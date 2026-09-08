@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -111,13 +112,14 @@ fun LoginRegisterScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Navy900)
+            .background(SurfaceBg)
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
         Card(
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Navy800),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
             modifier = Modifier
                 .fillMaxWidth()
@@ -132,16 +134,15 @@ fun LoginRegisterScreen(
                 Box(
                     modifier = Modifier
                         .size(56.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(TrustCyan.copy(alpha = 0.2f))
-                        .border(2.dp, TrustCyan, RoundedCornerShape(12.dp)),
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(TrustBlueContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Shield,
                         contentDescription = "Shield",
-                        tint = TrustCyan,
-                        modifier = Modifier.size(32.dp)
+                        tint = TrustBlue,
+                        modifier = Modifier.size(30.dp)
                     )
                 }
 
@@ -151,37 +152,58 @@ fun LoginRegisterScreen(
                     text = "TrustPay Mobile",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = WhitePure
+                    color = CharcoalText
                 )
 
                 Text(
                     text = "Zero-Trust Cryptographic Payment Authentication",
                     fontSize = 12.sp,
-                    color = SlateText
+                    color = SlateText,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 // Mode Toggle Tabs
                 TabRow(
                     selectedTabIndex = if (isRegisterMode) 1 else 0,
-                    containerColor = Navy700,
-                    contentColor = WhitePure,
-                    modifier = Modifier.clip(RoundedCornerShape(10.dp))
+                    containerColor = SurfaceVariant,
+                    contentColor = CharcoalText,
+                    indicator = { tabPositions ->
+                        TabRowDefaults.SecondaryIndicator(
+                            modifier = Modifier.tabIndicatorOffset(tabPositions[if (isRegisterMode) 1 else 0]),
+                            color = TrustBlue
+                        )
+                    },
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
                 ) {
                     Tab(
                         selected = !isRegisterMode,
                         onClick = { isRegisterMode = false; errorMessage = null },
-                        text = { Text("Sign In", fontWeight = FontWeight.SemiBold) }
+                        text = {
+                            Text(
+                                "Sign In",
+                                fontWeight = if (!isRegisterMode) FontWeight.Bold else FontWeight.Medium,
+                                color = if (!isRegisterMode) TrustBlue else SlateText
+                            )
+                        }
                     )
                     Tab(
                         selected = isRegisterMode,
                         onClick = { isRegisterMode = true; errorMessage = null },
-                        text = { Text("Register", fontWeight = FontWeight.SemiBold) }
+                        text = {
+                            Text(
+                                "Register",
+                                fontWeight = if (isRegisterMode) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isRegisterMode) TrustBlue else SlateText
+                            )
+                        }
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 if (!isRegisterMode) {
                     // Sign In Form
@@ -192,15 +214,17 @@ fun LoginRegisterScreen(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth().testTag("login_email_input"),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = TrustCyan,
+                            focusedBorderColor = TrustBlue,
                             unfocusedBorderColor = CardBorder,
-                            focusedTextColor = WhitePure,
-                            unfocusedTextColor = SlateLight
+                            focusedTextColor = CharcoalText,
+                            unfocusedTextColor = CharcoalText,
+                            focusedLabelColor = TrustBlue,
+                            unfocusedLabelColor = SlateMuted
                         ),
                         shape = RoundedCornerShape(10.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     OutlinedTextField(
                         value = loginPassword,
@@ -210,15 +234,17 @@ fun LoginRegisterScreen(
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth().testTag("login_password_input"),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = TrustCyan,
+                            focusedBorderColor = TrustBlue,
                             unfocusedBorderColor = CardBorder,
-                            focusedTextColor = WhitePure,
-                            unfocusedTextColor = SlateLight
+                            focusedTextColor = CharcoalText,
+                            unfocusedTextColor = CharcoalText,
+                            focusedLabelColor = TrustBlue,
+                            unfocusedLabelColor = SlateMuted
                         ),
                         shape = RoundedCornerShape(10.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     // Quick Demo Autofill Buttons
                     Row(
@@ -232,16 +258,16 @@ fun LoginRegisterScreen(
                                 errorMessage = null
                             },
                             shape = RoundedCornerShape(8.dp),
-                            color = Navy700,
+                            color = SurfaceVariant,
                             border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
                                 text = "Demo: Rahul",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = TrustCyan,
-                                modifier = Modifier.padding(vertical = 6.dp),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = TrustBlue,
+                                modifier = Modifier.padding(vertical = 8.dp),
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
                         }
@@ -253,33 +279,33 @@ fun LoginRegisterScreen(
                                 errorMessage = null
                             },
                             shape = RoundedCornerShape(8.dp),
-                            color = Navy700,
+                            color = SurfaceVariant,
                             border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
                                 text = "Demo: Priya",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = ElectricBlue,
-                                modifier = Modifier.padding(vertical = 6.dp),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = TrustBlue,
+                                modifier = Modifier.padding(vertical = 8.dp),
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     Button(
                         onClick = { handleLogin() },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(46.dp)
+                            .height(48.dp)
                             .testTag("login_submit_button"),
                         shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = TrustCyan)
+                        colors = ButtonDefaults.buttonColors(containerColor = TrustBlue)
                     ) {
-                        Text("Sign In to TrustPay", color = Navy900, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        Text("Sign In to TrustPay", color = WhitePure, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                     }
                 } else {
                     // Register Form
@@ -289,11 +315,18 @@ fun LoginRegisterScreen(
                         label = { Text("Full Name") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = TrustCyan, unfocusedBorderColor = CardBorder, focusedTextColor = WhitePure, unfocusedTextColor = SlateLight),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = TrustBlue,
+                            unfocusedBorderColor = CardBorder,
+                            focusedTextColor = CharcoalText,
+                            unfocusedTextColor = CharcoalText,
+                            focusedLabelColor = TrustBlue,
+                            unfocusedLabelColor = SlateMuted
+                        ),
                         shape = RoundedCornerShape(10.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     OutlinedTextField(
                         value = regEmail,
@@ -301,11 +334,18 @@ fun LoginRegisterScreen(
                         label = { Text("Email Address") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = TrustCyan, unfocusedBorderColor = CardBorder, focusedTextColor = WhitePure, unfocusedTextColor = SlateLight),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = TrustBlue,
+                            unfocusedBorderColor = CardBorder,
+                            focusedTextColor = CharcoalText,
+                            unfocusedTextColor = CharcoalText,
+                            focusedLabelColor = TrustBlue,
+                            unfocusedLabelColor = SlateMuted
+                        ),
                         shape = RoundedCornerShape(10.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     OutlinedTextField(
                         value = regMobile,
@@ -314,11 +354,18 @@ fun LoginRegisterScreen(
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                         modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = TrustCyan, unfocusedBorderColor = CardBorder, focusedTextColor = WhitePure, unfocusedTextColor = SlateLight),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = TrustBlue,
+                            unfocusedBorderColor = CardBorder,
+                            focusedTextColor = CharcoalText,
+                            unfocusedTextColor = CharcoalText,
+                            focusedLabelColor = TrustBlue,
+                            unfocusedLabelColor = SlateMuted
+                        ),
                         shape = RoundedCornerShape(10.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     OutlinedTextField(
                         value = regPassword,
@@ -327,11 +374,18 @@ fun LoginRegisterScreen(
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = TrustCyan, unfocusedBorderColor = CardBorder, focusedTextColor = WhitePure, unfocusedTextColor = SlateLight),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = TrustBlue,
+                            unfocusedBorderColor = CardBorder,
+                            focusedTextColor = CharcoalText,
+                            unfocusedTextColor = CharcoalText,
+                            focusedLabelColor = TrustBlue,
+                            unfocusedLabelColor = SlateMuted
+                        ),
                         shape = RoundedCornerShape(10.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     OutlinedTextField(
                         value = regConfirmPassword,
@@ -340,33 +394,50 @@ fun LoginRegisterScreen(
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = TrustCyan, unfocusedBorderColor = CardBorder, focusedTextColor = WhitePure, unfocusedTextColor = SlateLight),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = TrustBlue,
+                            unfocusedBorderColor = CardBorder,
+                            focusedTextColor = CharcoalText,
+                            unfocusedTextColor = CharcoalText,
+                            focusedLabelColor = TrustBlue,
+                            unfocusedLabelColor = SlateMuted
+                        ),
                         shape = RoundedCornerShape(10.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     Button(
                         onClick = { handleRegister() },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(46.dp)
+                            .height(48.dp)
                             .testTag("register_submit_button"),
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = SecurityGreen)
                     ) {
-                        Text("Create Secure Account", color = Navy900, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        Text("Create Secure Account", color = WhitePure, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                     }
                 }
 
                 if (errorMessage != null) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = errorMessage!!,
-                        color = SecurityRed,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(SecurityRedBg)
+                            .border(1.dp, SecurityRed.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = errorMessage!!,
+                            color = SecurityRed,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
         }

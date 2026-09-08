@@ -94,7 +94,8 @@ fun ReceiveQrModal(
     Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Navy800),
+            colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
             border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
             modifier = Modifier
                 .fillMaxWidth()
@@ -102,7 +103,7 @@ fun ReceiveQrModal(
                 .testTag("receive_qr_modal")
         ) {
             Column(
-                modifier = Modifier.padding(18.dp),
+                modifier = Modifier.padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Row(
@@ -111,18 +112,26 @@ fun ReceiveQrModal(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.QrCode,
-                            contentDescription = null,
-                            tint = TrustCyan,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(TrustBlueContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.QrCode,
+                                contentDescription = null,
+                                tint = TrustBlue,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = "Receive Money QR",
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
-                            color = WhitePure
+                            color = CharcoalText
                         )
                     }
 
@@ -131,15 +140,16 @@ fun ReceiveQrModal(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 // QR Code Bitmap Container
                 Box(
                     modifier = Modifier
                         .size(210.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(WhitePure)
-                        .padding(8.dp),
+                        .background(SurfaceWhite)
+                        .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+                        .padding(10.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     if (qrBitmap != null) {
@@ -149,34 +159,38 @@ fun ReceiveQrModal(
                             modifier = Modifier.fillMaxSize()
                         )
                     } else {
-                        CircularProgressIndicator(color = TrustCyan)
+                        CircularProgressIndicator(color = TrustBlue)
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 // Live TTL Countdown Bar
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (remainingSeconds <= 5) SecurityRedBg else TrustBlueContainer)
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = null,
-                        tint = TrustCyan,
+                        tint = if (remainingSeconds <= 5) SecurityRed else TrustBlue,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "Rotating token expires in ${remainingSeconds}s",
                         fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (remainingSeconds <= 5) SecurityRed else TrustCyan
+                        fontWeight = FontWeight.Bold,
+                        color = if (remainingSeconds <= 5) SecurityRed else TrustBlue
                     )
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 // Amount configuration
                 Row(
@@ -194,10 +208,12 @@ fun ReceiveQrModal(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(1f),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = TrustCyan,
+                            focusedBorderColor = TrustBlue,
                             unfocusedBorderColor = CardBorder,
-                            focusedTextColor = WhitePure,
-                            unfocusedTextColor = SlateLight
+                            focusedTextColor = CharcoalText,
+                            unfocusedTextColor = CharcoalText,
+                            focusedLabelColor = TrustBlue,
+                            unfocusedLabelColor = SlateMuted
                         ),
                         shape = RoundedCornerShape(8.dp)
                     )
@@ -205,14 +221,14 @@ fun ReceiveQrModal(
                     Button(
                         onClick = { generateNewToken() },
                         shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Navy700),
+                        colors = ButtonDefaults.buttonColors(containerColor = TrustBlue),
                         modifier = Modifier.height(56.dp)
                     ) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = TrustCyan)
+                        Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = WhitePure)
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // URI Payload Preview
                 currentToken?.let { token ->
