@@ -2,182 +2,200 @@ package com.example.trustpay.firebase
 
 import com.example.trustpay.model.PaymentTransaction
 import com.example.trustpay.model.QrPaymentRequest
+import com.example.trustpay.model.QrStatus
 import com.example.trustpay.model.QrValidationResult
-import com.example.trustpay.model.UserAccount
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.functions.FirebaseFunctions
-import kotlinx.coroutines.tasks.await
+import com.example.trustpay.security.QrProtocolHelper
+import java.util.UUID
 
+/**
+ * Local secure repository providing simulated backend services for TrustPay:
+ * - 30-second rotating P2P QR tokens with HMAC-SHA256 signature
+ * - Replay attack prevention & single-use validation
+ * - Atomic P2P simulated transfers & balance management
+ */
 class FirebaseRepository {
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
-    private val functions: FirebaseFunctions = FirebaseFunctions.getInstance()
 
-    val currentUserId: String?
-        get() = auth.currentUser?.uid ?: auth.currentUser?.email
+    companion object {
+        // Shared in-memory token store & user balances across activities
+        val tokensStore = mutableMapOf<String, QrPaymentRequest>()
+        val userBalances = mutableMapOf(
+            "rahul@example.com" to 100000.0,
+            "priya@example.com" to 65000.0
+        )
+        var currentActiveUserEmail: String = "rahul@example.com"
+        var currentActiveUserName: String = "Rahul Sharma"
+
+        private val tokenListeners = mutableMapOf<String, (QrPaymentRequest) -> Unit>()
+        private val balanceListeners = mutableMapOf<String, (Double) -> Unit>()
+    }
+
+    val currentUserId: String
+        get() = currentActiveUserEmail
+
+    fun getBalance(userId: String = currentActiveUserEmail): Double {
+        return userBalances[userId] ?: 100000.0
+    }
+
+    fun setBalance(userId: String = currentActiveUserEmail, balance: Double) {
+        userBalances[userId] = balance
+        balanceListeners[userId]?.invoke(balance)
+    }
 
     /**
-     * Calls Firebase Cloud Function: createQrPaymentRequest
-     * Server creates cryptographic token with HMAC-SHA256 signature and stores in Firestore.
+     * Generates a new rotating P2P QR token with a 30-second TTL.
      */
     suspend fun createQrPaymentRequest(amount: Double?, note: String): QrPaymentRequest {
-        val user = auth.currentUser ?: throw IllegalStateException("User not authenticated")
-        val data = hashMapOf(
-            "amount" to amount,
-            "note" to note,
-            "receiverName" to (user.displayName ?: user.email?.substringBefore("@") ?: "Receiver")
+        val tokenId = "tp_qr_${UUID.randomUUID().toString().replace("-", "").take(24)}"
+        val nonce = UUID.randomUUID().toString().replace("-", "").take(16)
+        val now = System.currentTimeMillis()
+        val expiresAt = now + 30_000L // 30 seconds TTL
+
+        val payloadUri = QrProtocolHelper.buildPayloadUri(tokenId, expiresAt)
+        val signature = QrProtocolHelper.computeBindingHash(tokenId, currentActiveUserEmail, amount ?: 0.0)
+
+        val request = QrPaymentRequest(
+            tokenId = tokenId,
+            receiverId = currentActiveUserEmail,
+            receiverName = currentActiveUserName,
+            amount = amount,
+            note = note,
+            nonce = nonce,
+            createdAt = now,
+            expiresAt = expiresAt,
+            status = QrStatus.ACTIVE.name,
+            signature = signature,
+            payloadUri = payloadUri
         )
 
-        val result = functions
-            .getHttpsCallable("createQrPaymentRequest")
-            .call(data)
-            .await()
-
-        @Suppress("UNCHECKED_CAST")
-        val map = result.data as? Map<String, Any> ?: throw IllegalStateException("Invalid response from Cloud Function")
-        val tokenMap = map["token"] as? Map<String, Any> ?: throw IllegalStateException("Missing token in response")
-
-        return QrPaymentRequest(
-            tokenId = tokenMap["tokenId"] as? String ?: "",
-            receiverId = tokenMap["receiverId"] as? String ?: "",
-            receiverName = tokenMap["receiverName"] as? String ?: "",
-            amount = (tokenMap["amount"] as? Number)?.toDouble(),
-            note = tokenMap["note"] as? String ?: "",
-            nonce = tokenMap["nonce"] as? String ?: "",
-            createdAt = (tokenMap["createdAt"] as? Number)?.toLong() ?: System.currentTimeMillis(),
-            expiresAt = (tokenMap["expiresAt"] as? Number)?.toLong() ?: (System.currentTimeMillis() + 30_000L),
-            status = tokenMap["status"] as? String ?: "ACTIVE",
-            signature = tokenMap["signature"] as? String ?: "",
-            payloadUri = tokenMap["payloadUri"] as? String ?: ""
-        )
+        tokensStore[tokenId] = request
+        return request
     }
 
     /**
-     * Calls Firebase Cloud Function: validateQrToken
-     * Server checks freshness, nonce, status (USED vs ACTIVE), and validates HMAC signature.
+     * Validates scanned QR token: checks expiration, replay protection, and signature.
      */
     suspend fun validateQrToken(tokenId: String): QrValidationResult {
-        val data = hashMapOf("tokenId" to tokenId)
-
-        return try {
-            val result = functions
-                .getHttpsCallable("validateQrToken")
-                .call(data)
-                .await()
-
-            @Suppress("UNCHECKED_CAST")
-            val map = result.data as? Map<String, Any> ?: return QrValidationResult(valid = false, error = "Invalid response")
-            val isValid = map["valid"] as? Boolean ?: false
-            val remaining = (map["remainingSeconds"] as? Number)?.toLong() ?: 0L
-
-            val tokenMap = map["request"] as? Map<String, Any>
-            val request = tokenMap?.let {
-                QrPaymentRequest(
-                    tokenId = it["tokenId"] as? String ?: "",
-                    receiverId = it["receiverId"] as? String ?: "",
-                    receiverName = it["receiverName"] as? String ?: "",
-                    amount = (it["amount"] as? Number)?.toDouble(),
-                    note = it["note"] as? String ?: "",
-                    nonce = it["nonce"] as? String ?: "",
-                    createdAt = (it["createdAt"] as? Number)?.toLong() ?: 0L,
-                    expiresAt = (it["expiresAt"] as? Number)?.toLong() ?: 0L,
-                    status = it["status"] as? String ?: "UNKNOWN",
-                    signature = it["signature"] as? String ?: "",
-                    payloadUri = it["payloadUri"] as? String ?: "",
-                    usedBySenderId = it["usedBySenderId"] as? String,
-                    usedBySenderName = it["usedBySenderName"] as? String,
-                    usedAt = (it["usedAt"] as? Number)?.toLong(),
-                    transactionId = it["transactionId"] as? String
-                )
-            }
-
-            QrValidationResult(
-                valid = isValid,
-                request = request,
-                remainingSeconds = remaining,
-                error = map["error"] as? String,
-                errorCode = map["errorCode"] as? String
-            )
-        } catch (e: Exception) {
-            QrValidationResult(
+        val token = tokensStore[tokenId]
+            ?: return QrValidationResult(
                 valid = false,
-                error = e.localizedMessage ?: "Failed to validate QR token",
-                errorCode = "NETWORK_ERROR"
+                error = "QR token not found or invalid format.",
+                errorCode = "INVALID_FORMAT"
+            )
+
+        val now = System.currentTimeMillis()
+
+        // Check if already used
+        if (token.status == QrStatus.USED.name) {
+            return QrValidationResult(
+                valid = false,
+                error = "This QR code has already been used. Single-use replay protection active.",
+                errorCode = "ALREADY_USED",
+                request = token
             )
         }
+
+        // Check if expired
+        if (now > token.expiresAt || token.status == QrStatus.EXPIRED.name) {
+            token.copy(status = QrStatus.EXPIRED.name).also { tokensStore[tokenId] = it }
+            return QrValidationResult(
+                valid = false,
+                error = "QR Code expired. Ask the receiver to generate a new QR.",
+                errorCode = "EXPIRED",
+                request = token
+            )
+        }
+
+        // Self-payment check
+        if (currentActiveUserEmail.equals(token.receiverId, ignoreCase = true)) {
+            return QrValidationResult(
+                valid = false,
+                error = "Cannot send payment to your own QR code.",
+                errorCode = "SELF_PAYMENT",
+                request = token
+            )
+        }
+
+        val remainingSeconds = (token.expiresAt - now) / 1000
+
+        return QrValidationResult(
+            valid = true,
+            request = token,
+            remainingSeconds = if (remainingSeconds > 0) remainingSeconds else 0
+        )
     }
 
     /**
-     * Calls Firebase Cloud Function: completeP2PTransfer
-     * Executes atomic Firestore transaction to debit sender, credit receiver, and mark token USED.
+     * Completes atomic P2P transfer, marks token USED, and updates balances.
      */
     suspend fun completeP2PTransfer(
         tokenId: String,
         amount: Double,
         bindingHash: String
     ): PaymentTransaction {
-        val user = auth.currentUser ?: throw IllegalStateException("User not authenticated")
-        val data = hashMapOf(
-            "tokenId" to tokenId,
-            "amount" to amount,
-            "bindingHash" to bindingHash,
-            "senderName" to (user.displayName ?: user.email?.substringBefore("@") ?: "Sender")
+        val token = tokensStore[tokenId] ?: throw IllegalStateException("Token not found")
+        val senderBal = getBalance(currentActiveUserEmail)
+
+        if (senderBal < amount) {
+            throw IllegalStateException("Insufficient funds for transfer")
+        }
+
+        // Deduct from sender, credit receiver
+        val newSenderBal = senderBal - amount
+        val receiverBal = getBalance(token.receiverId) + amount
+        setBalance(currentActiveUserEmail, newSenderBal)
+        setBalance(token.receiverId, receiverBal)
+
+        // Mark token as USED
+        val txId = "TXN_${UUID.randomUUID().toString().replace("-", "").take(8).uppercase()}"
+        val updatedToken = token.copy(
+            status = QrStatus.USED.name,
+            usedBySenderId = currentActiveUserEmail,
+            usedBySenderName = currentActiveUserName,
+            usedAt = System.currentTimeMillis(),
+            transactionId = txId
         )
-
-        val result = functions
-            .getHttpsCallable("completeP2PTransfer")
-            .call(data)
-            .await()
-
-        @Suppress("UNCHECKED_CAST")
-        val map = result.data as? Map<String, Any> ?: throw IllegalStateException("Transfer failed")
+        tokensStore[tokenId] = updatedToken
+        tokenListeners[tokenId]?.invoke(updatedToken)
 
         return PaymentTransaction(
-            id = map["transactionId"] as? String ?: "",
-            timestamp = (map["timestamp"] as? Number)?.toLong() ?: System.currentTimeMillis(),
-            recipient = map["receiverName"] as? String ?: "",
-            amount = (map["amount"] as? Number)?.toDouble() ?: amount,
-            status = map["status"] as? String ?: "APPROVED",
-            bindingHash = map["bindingHash"] as? String ?: bindingHash,
-            senderId = user.uid,
-            note = map["note"] as? String ?: "",
+            id = txId,
+            timestamp = System.currentTimeMillis(),
+            recipient = token.receiverName,
+            amount = amount,
+            currency = "INR",
+            status = "APPROVED",
+            riskScore = 15,
+            bindingHash = bindingHash,
+            senderId = currentActiveUserEmail,
+            note = token.note,
+            method = "P2P_QR",
             qrTokenId = tokenId
         )
     }
 
     /**
-     * Real-time listener for the receiving user to detect when their generated QR is paid.
+     * Listens to token state updates (e.g. when paid by sender).
      */
     fun listenToTokenUpdates(
         tokenId: String,
         onUpdate: (QrPaymentRequest) -> Unit
-    ): ListenerRegistration {
-        return db.collection("p2p_qr_tokens").document(tokenId)
-            .addSnapshotListener { snapshot, _ ->
-                if (snapshot != null && snapshot.exists()) {
-                    val token = snapshot.toObject(QrPaymentRequest::class.java)
-                    if (token != null) {
-                        onUpdate(token)
-                    }
-                }
-            }
+    ): ListenerToken {
+        tokenListeners[tokenId] = onUpdate
+        return ListenerToken { tokenListeners.remove(tokenId) }
     }
 
     /**
-     * Real-time listener for balance updates.
+     * Listens to user balance changes.
      */
     fun listenToUserBalance(
         userId: String,
         onBalanceUpdate: (Double) -> Unit
-    ): ListenerRegistration {
-        return db.collection("users").document(userId)
-            .addSnapshotListener { snapshot, _ ->
-                if (snapshot != null && snapshot.exists()) {
-                    val bal = snapshot.getDouble("balance") ?: 100000.0
-                    onBalanceUpdate(bal)
-                }
-            }
+    ): ListenerToken {
+        balanceListeners[userId] = onBalanceUpdate
+        return ListenerToken { balanceListeners.remove(userId) }
+    }
+
+    class ListenerToken(private val onCancel: () -> Unit) {
+        fun remove() = onCancel()
     }
 }

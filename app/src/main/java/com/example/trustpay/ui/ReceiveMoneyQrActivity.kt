@@ -17,14 +17,13 @@ import com.example.trustpay.firebase.FirebaseRepository
 import com.example.trustpay.model.QrPaymentRequest
 import com.example.trustpay.model.QrStatus
 import com.example.trustpay.security.QrProtocolHelper
-import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.launch
 
 class ReceiveMoneyQrActivity : AppCompatActivity() {
 
     private val repository = FirebaseRepository()
     private var currentToken: QrPaymentRequest? = null
-    private var tokenListener: ListenerRegistration? = null
+    private var tokenListener: FirebaseRepository.ListenerToken? = null
     private var countDownTimer: CountDownTimer? = null
 
     // UI elements

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:translateX="27"
+        android:translateY="27">
+        <!-- Shield Base within 54x54 scaled space (27 to 81) -->
+        <path
+            android:fillColor="#06B6D4"
+            android:pathData="M27,2 L6,10 L6,26 C6,40.5 15,50.8 27,54 C39,50.8 48,40.5 48,26 L48,10 Z" />
+        <!-- Inner Shield Highlight -->
+        <path
+            android:fillColor="#0891B2"
+            android:pathData="M27,6 L10,13 L10,26 C10,38 17.5,46.5 27,49.5 C36.5,46.5 44,38 44,26 L44,13 Z" />
+        <!-- Shield Center Emblem - Currency / Check -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M24,34 L16,26 L19,23 L24,28 L35,17 L38,20 Z" />
+    </group>
+</vector>
